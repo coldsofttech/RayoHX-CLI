@@ -1,90 +1,151 @@
-# python-cli-public-repo-template
+# RayoHX command line
 
-[![CI](https://github.com/coldsofttech/python-cli-public-repo-template/actions/workflows/ci.yml/badge.svg)](https://github.com/coldsofttech/python-cli-public-repo-template/actions/workflows/ci.yml)
-[![PyPI](https://img.shields.io/pypi/v/python-cli-public-repo-template)](https://pypi.org/project/python-cli-public-repo-template/)
-[![Python versions](https://img.shields.io/pypi/pyversions/python-cli-public-repo-template)](https://pypi.org/project/python-cli-public-repo-template/)
+[![CI](https://github.com/coldsofttech/RayoHX-CLI/actions/workflows/ci.yml/badge.svg)](https://github.com/coldsofttech/RayoHX-CLI/actions/workflows/ci.yml)
+[![PyPI](https://img.shields.io/pypi/v/rayohx-cli)](https://pypi.org/project/rayohx-cli/)
+[![Python versions](https://img.shields.io/pypi/pyversions/rayohx-cli)](https://pypi.org/project/rayohx-cli/)
+[![Typer](https://img.shields.io/badge/Typer-CLI-black)](https://typer.tiangolo.com/)
+[![Rich](https://img.shields.io/badge/output-Rich-blue)](https://github.com/Textualize/rich)
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
-[![CLI: Typer](https://img.shields.io/badge/CLI-Typer-009688)](https://typer.tiangolo.com/)
-[![Output: Rich](https://img.shields.io/badge/output-Rich-blueviolet)](https://github.com/Textualize/rich)
-[![License](https://img.shields.io/github/license/coldsofttech/python-cli-public-repo-template)](LICENSE)
+[![uv](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/uv/main/assets/badge/v0.json)](https://github.com/astral-sh/uv)
+[![License](https://img.shields.io/github/license/coldsofttech/RayoHX-CLI)](LICENSE)
 
-A ready-to-use starting point for public Python command line tools on GitHub. It includes a friendly Typer and Rich command line on top of a reusable, typed library, automated testing on Python 3.11 to 3.15, linting, one-step releases to PyPI, and the community and security files a public repository needs.
+Download HLS streams from your terminal.
 
-## What you get
-
-- A command line with `--help`, `--version`, `--verbose`, `--quiet`, `--no-color` and shell completion
-- Colored, readable output with Rich that switches off automatically when piped
-- A separate typed library, so your logic can be reused outside the command line
-- Fast, reproducible setup with [uv](https://docs.astral.sh/uv/)
-- Linting, formatting and type checking before every commit and in CI
-- Automated tests on Python 3.11 to 3.15 (Ubuntu) and 3.11 (Windows and macOS)
-- Publishing to PyPI when you create a GitHub release, with no stored tokens
-- Contribution, conduct, support and security-reporting guidelines
-- Issue forms, a pull request template and automated dependency updates
-
-## Getting started
-
-1. Click **Use this template** on GitHub and create your new repository.
-2. Run the **Init** workflow from the Actions tab and merge the pull request it opens. This fills in your owner and repository name.
-3. Rename the example library, the example command line package and the `example-cli` command. See the [development guide](docs/development.md).
-4. Add your contact details in `CODE_OF_CONDUCT.md`, delete `.github/workflows/init.yml`, and replace this description.
-5. Apply the repository protections by following the [setup guide](docs/repo-setup.md).
-6. Install dependencies and commit checks:
-
-   ```bash
-   uv sync
-   uv run pre-commit install --hook-type pre-commit --hook-type post-commit
-   ```
-
-## Installation
-
-Requires Python 3.11 or newer. The recommended way to install a command line tool is in its own isolated environment:
-
-```bash
-uv tool install python-cli-public-repo-template
+```sh
+rayohx info https://cdn.example.com/vod/master.m3u8
+rayohx download https://cdn.example.com/vod/master.m3u8 -o movie.mp4
 ```
 
-Or with pipx:
+## What is RayoHX?
 
-```bash
-pipx install python-cli-public-repo-template
+RayoHX is a tool for saving HLS streams (`.m3u8` links) as ordinary video files. Many websites play
+video as a stream made of many small pieces, which is awkward to save by hand. Give RayoHX the
+stream's web address and it looks at what the stream offers, lets you choose the quality, audio and
+subtitles you want, and puts everything together into a single file you can keep and play anywhere.
+
+RayoHX comes in several forms that share the same engine: a Python library, this command line, a
+Docker image and a desktop window for Windows. This repository is the **command line**: the
+`rayohx` command, for use in a terminal, a script or a scheduled job.
+
+## How it helps
+
+- **See before you download**: check a stream's qualities, audio and subtitle tracks and encryption
+  without downloading any video
+- **Get exactly what you want**: pick the quality and the audio and subtitles you need, instead of
+  taking whatever comes first
+- **Finish what you started**: interrupted downloads continue where they stopped
+- **Safe by default**: it never replaces an existing file unless you allow it, and refuses damaged
+  or unsafe streams with a clear explanation instead of failing in a confusing way
+- **Easy to script**: the saved file's path is the only thing printed on stdout, and `--json` and
+  `--events` give output that other programs can read
+- **Private**: tokens, cookies and proxy passwords are kept out of logs and error messages
+
+## What you can do
+
+- See a stream's qualities, audio and subtitle tracks and encryption before downloading anything
+- Choose the quality, audio and subtitles, and download to a file or a folder of segments
+- Download encrypted (AES-128) streams; protected (DRM) and live streams are refused with an
+  explanation
+- Join a separate audio track into one MP4, with nothing re-encoded
+- Continue interrupted downloads where they stopped, and clean up what they leave behind
+- Download several streams with one command, from addresses or a list file (`--input-file`)
+- Use a playlist you already have, from a file, instead of fetching it (`--playlist-file`, `--base-url`)
+- Use proxies, custom headers and cookies when a site needs them
+- Follow a download from another program with `--events`
+- Watch a progress bar, or get machine-readable output with `--json`
+- Keep settings in a file or `RAYOHX_` environment variables
+- Use `--verbose`, `--quiet`, `--no-color` and shell completion
+
+## Install
+
+Requires Python 3.11 or newer on Windows, Linux or macOS, where a ready-to-use compiled build is
+installed for your platform. Install it in its own isolated environment:
+
+```sh
+uv tool install rayohx-cli
 ```
 
-To try it without installing:
+or with pipx:
 
-```bash
-uvx --from python-cli-public-repo-template example-cli --help
+```sh
+pipx install rayohx-cli
 ```
 
-## Usage
+You can also run it once without installing it:
 
-```console
-$ example-cli --help
-$ example-cli --version
-$ example-cli hello Ada
-Hello, Ada!
+```sh
+uvx --from rayohx-cli rayohx --help
 ```
 
-See the [CLI reference](docs/cli.md) for every command, option and exit code.
+Check it works:
 
-> After renaming the command, update the examples above. Once you have written your tool's real commands, replace this example with a short walkthrough of them.
-
-## Development
-
-```bash
-git clone https://github.com/coldsofttech/python-cli-public-repo-template.git
-cd python-cli-public-repo-template
-uv sync
-uv run example-cli --help
-uv run pytest
+```sh
+rayohx --version
 ```
 
-See the [development guide](docs/development.md) for linting, type checking and releasing.
+Prefer a ready-made installer (Windows setup, Linux `.deb` and `.rpm`)? The newest ones are on the
+[RayoHX-Installer releases page](https://github.com/coldsofttech/RayoHX-Installer/releases).
 
-## Contributing
+## Quick start
 
-See [CONTRIBUTING.md](CONTRIBUTING.md). Please report security issues privately as described in [SECURITY.md](SECURITY.md).
+Look at a stream first, to see what it offers:
+
+```sh
+rayohx info https://cdn.example.com/vod/master.m3u8
+```
+
+Download it to a file:
+
+```sh
+rayohx download https://cdn.example.com/vod/master.m3u8 -o movie.mp4
+```
+
+Use the result in a script. The saved file's path is the only thing printed:
+
+```sh
+file=$(rayohx download https://cdn.example.com/vod/master.m3u8 --quiet)
+```
+
+Download several streams from a list file, or get the details as JSON:
+
+```sh
+rayohx download --input-file streams.txt
+rayohx info https://cdn.example.com/vod/master.m3u8 --json
+```
+
+Remove the leftover folders of interrupted downloads, and see which settings are in effect:
+
+```sh
+rayohx clean
+rayohx config
+```
+
+Run `rayohx --help`, or `rayohx download --help`, to see every option.
+
+## Commands
+
+| Command | What it does |
+|---|---|
+| `rayohx info` | Shows what a stream offers: qualities, audio, subtitles and encryption |
+| `rayohx download` | Saves a stream, or several, to a file or a folder of segments |
+| `rayohx clean` | Removes leftover working folders from interrupted downloads |
+| `rayohx config` | Shows which settings file and `RAYOHX_` variables are in effect |
+
+## Other ways to use RayoHX
+
+| What it is | Where |
+|---|---|
+| Python library, to use RayoHX inside your own programs | [`rayohx`](https://pypi.org/project/rayohx/) |
+| Docker image, the same command without installing Python | `ghcr.io/coldsofttech/rayohx` |
+| Desktop window for Windows | The full setup on the [RayoHX-Installer releases page](https://github.com/coldsofttech/RayoHX-Installer/releases) |
+
+## Learn more
+
+- [Command line guide](docs/guides/cli.md): every option, settings, exit codes and examples
+- [Changelog](CHANGELOG.md)
+- [Contributing](CONTRIBUTING.md) · [Security](SECURITY.md) · [Support](SUPPORT.md)
+- [Report a problem](https://github.com/coldsofttech/RayoHX-CLI/issues)
 
 ## License
 
-Released under the [MIT License](LICENSE).
+Apache-2.0. See [LICENSE](LICENSE).

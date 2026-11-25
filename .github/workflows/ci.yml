@@ -14,17 +14,18 @@ concurrency:
 
 jobs:
   lint:
+    name: lint
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v7
-      - uses: astral-sh/setup-uv@v10.4.0
-      - run: uv sync --locked
-      - name: Check the generated CLI reference is up to date
-        run: |
-          uv run typer example_cli.cli utils docs --name example-cli --output docs/cli-reference.md
-          git diff --exit-code docs/cli-reference.md
-      - uses: pre-commit/action@v3.0.1
+      - name: Check out the repository
+        uses: actions/checkout@v7
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v10.4.0
+      - name: Install the locked dependencies
+        run: uv sync --locked
+      - name: Run the pre-commit checks
+        uses: pre-commit/action@v3.0.1
         env:
           SKIP: pytest # covered by the test job across all Python versions
 
@@ -43,12 +44,16 @@ jobs:
           - os: macos-latest
             python-version: "3.11"
     steps:
-      - uses: actions/checkout@v7
-      - uses: astral-sh/setup-uv@v10.4.0
+      - name: Check out the repository
+        uses: actions/checkout@v7
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v10.4.0
         with:
           python-version: ${{ matrix.python-version }}
-      - run: uv sync --locked
-      - run: uv run pytest
+      - name: Install the locked dependencies
+        run: uv sync --locked
+      - name: Run the unit tests
+        run: uv run pytest
 
   integration:
     name: integration (${{ matrix.os }}, ${{ matrix.python-version }})
@@ -65,26 +70,44 @@ jobs:
           - os: macos-latest
             python-version: "3.11"
     steps:
-      - uses: actions/checkout@v7
-      - uses: astral-sh/setup-uv@v10.4.0
+      - name: Check out the repository
+        uses: actions/checkout@v7
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v10.4.0
         with:
           python-version: ${{ matrix.python-version }}
-      - run: uv sync --locked
-      - run: uv run pytest -m integration --no-cov
+      - name: Install the locked dependencies
+        run: uv sync --locked
+      - name: Run the integration tests
+        run: uv run pytest -m integration --no-cov
 
   build:
+    name: build
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v7
-      - uses: astral-sh/setup-uv@v10.4.0
-      - run: uv build
-      - run: uvx twine check --strict dist/*
+      - name: Check out the repository
+        uses: actions/checkout@v7
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v10.4.0
+      - name: Build the packages
+        run: PYD_BUILD=1 uv build --wheel
+      - name: Check the package metadata
+        run: uvx twine check --strict dist/*
+      - name: Check the wheel holds the compiled command line, stubs and no sources
+        run: |
+          unzip -l dist/rayohx_cli-*.whl > wheel.txt
+          grep -qE " rayohx_cli\..*\.(so|pyd)$" wheel.txt
+          grep -qE " rayohx_cli/__init__\.pyi$" wheel.txt
+          if grep -E " rayohx_cli.*\.py$" wheel.txt; then
+            echo "the compiled wheel must not hold .py sources"; exit 1
+          fi
       - name: Smoke test the built wheel
-        run: uvx --from dist/*.whl example-cli --version
+        run: uvx --from dist/rayohx_cli-*.whl rayohx --version
 
   # Single required status check for the branch ruleset.
   ci:
+    name: ci (required check)
     if: always()
     needs: [lint, test, integration, build]
     runs-on: ubuntu-latest

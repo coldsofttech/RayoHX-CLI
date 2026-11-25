@@ -1,86 +1,75 @@
 # Architecture
 
-How the pieces of this template fit together. For day-to-day commands, see [development](development.md). For one-time repository settings, see [repository setup](repo-setup.md).
+How `rayohx_cli` (the `rayohx` command) is put together. For using it, see the [command line guide](guides/cli.md); for working on it, see [development](development.md).
 
-## Overview
+## Layering
 
-A change moves through three layers of checks before it reaches `main`, and a release moves through one more before it reaches PyPI.
+The command line only reads options and shows results. All the work is done by the `rayohx` library: `inspect` and `select_stream` for `info`, `Downloader` for `download`. The library never imports the command line and never prints or exits. The command line adds three runtime dependencies of its own: Typer, Click (which Typer builds on) and Rich. A unit test checks that the package imports only what it declares.
 
-```mermaid
-flowchart LR
-    A[Commit] -->|pre-commit hooks| B[Push branch]
-    B --> C[Pull request]
-    C --> D{CI and security checks}
-    D -->|pass + review| E[Squash merge to main]
-    E --> F[GitHub release]
-    F --> G[Release workflow]
-    G --> H[PyPI]
-```
-
-## Layers
-
-| Layer | What runs | Where |
-| --- | --- | --- |
-| Local | gitleaks, file hygiene, markdownlint, Ruff, `uv lock` check, mypy, Sweepito scan and cleanup | pre-commit hooks |
-| Pull request | `ci` (lint, unit and integration tests on Python 3.11 to 3.15 on Ubuntu plus 3.11 on Windows and macOS, build), dependency review, CodeQL | GitHub Actions |
-| Repository | Branch ruleset, secret scanning with push protection, Dependabot alerts and updates | GitHub settings |
-| Release | Version check, build, trusted publish to PyPI | `release.yml` |
-
-## Source layout
+## Modules
 
 ```text
-src/example_package/   typed library: all the logic, never prints or exits
-src/example_cli/       Typer + Rich command line over the library
-tests/                 pytest unit tests with coverage (80% minimum)
-tests/integration/     tests marked `integration`: skipped by default and in pre-commit, run in CI
-pyproject.toml         metadata, dev dependencies and tool configuration
-uv.lock                locked dependency set, checked by CI with --locked
+src/rayohx_cli/
+  __main__.py      python -m rayohx_cli: calls run()
+  cli/
+    __init__.py    run(), the console script: runs the app and reports unexpected errors briefly
+    root.py        the Typer app, its help text and the options every command takes
+    info.py        the info command
+    download.py    the download command
+    lifecycle.py   Ctrl-C handling, and reporting how a download ended
+    common.py      exit codes, usage_error() and make_config()
+  params/          every option, defined once and shared by the commands that take it
+  values.py        turns what was typed into engine settings (pure functions, no output)
+  settings.py      the settings file: where it is, how it is read and checked
+  output.py        the two Rich consoles and every way of printing
+  render.py        the tables that info shows
+  format.py        numbers as short text (sizes, speeds, durations)
+  progress/        shows a download's events: a bar, plain lines, or nothing
 ```
 
-The version lives in one place, `__version__` in the package, and Hatchling reads it at build time. The release workflow compares it with the release tag.
+Importing `rayohx_cli.cli` imports `info` and `download`, which register their commands on the app in `root.py`.
 
-## Library and CLI layers
+## A command, step by step
 
-```mermaid
-flowchart LR
-    U[User] --> C[example_cli]
-    C -->|calls| L[example_package]
-    C --> O[Rich consoles]
-```
+1. `run()` starts the Typer app. The root callback in `root.py` runs first: it rejects clashing global options (`--verbose` with `--quiet`, `--config` with `--no-config`), configures the output and logging, finds and loads the settings file, and hands each command its defaults.
+2. The command's options come from `params`. A value is taken from the command line first, then from a `RAYOHX_<NAME>` environment variable, then from the settings file, then from the built-in default.
+3. `make_config` builds the engine settings through `values.build_config`. A bad value raises `ConfigurationError`, which is shown as a usage error (exit code 2).
+4. `download` creates a `Downloader`, subscribes a progress reporter to its events, and runs it inside `graceful_interrupt`: the first Ctrl-C asks the download to stop cleanly, and a second one quits at once.
+5. `finish` reports how it ended. The saved path goes to stdout, a "Saved ..." line goes to stderr, and the exit code is set.
 
-- `example_cli` parses arguments with Typer, calls `example_package`, and writes all output through the shared Rich consoles: data to stdout, messages and errors to stderr.
-- `example_package` holds the logic. It raises exceptions instead of printing or exiting, so other front ends can reuse it.
-- The console script `example-cli` and `python -m example_cli` both enter through `example_cli.cli:app`. Both packages ship in one wheel and share the version in `example_package.__version__`.
+`info` skips steps 4 and 5. It inspects the playlist, marks the stream a download with the same options would pick, and prints the result as JSON (`--json`) or as tables (`render.show`).
 
-## Workflows
+## Output
 
-| Workflow | Trigger | Purpose |
-| --- | --- | --- |
-| `ci.yml` | Pull request, push to `main` | Runs `lint`, `test`, `integration` and `build` in parallel. A final `ci` job gates on all four and is the only check the ruleset requires. |
-| `dependency-review.yml` | Pull request | Blocks pull requests that add vulnerable dependencies. |
-| `audit.yml` | Weekly, manual, and pull requests that change `uv.lock` | Runs `pip-audit` on the locked dependencies to catch newly published vulnerabilities. |
-| `release.yml` | GitHub release published | Checks the tag matches the version, builds, then publishes to PyPI. |
-| `init.yml` | Manual | One-time placeholder replacement in a repo created from the template. Skipped in the template itself. |
+- **Data to stdout, everything else to stderr.** `output.data` and `output.print_json` write a command's result to the `console`. Messages, errors, progress and logs go to `err_console`, so the result can be piped or captured. Nothing uses `print`.
+- **`--quiet`** hides status messages and progress; errors and the result still show. **`--no-color`** and the `NO_COLOR` variable turn colour off, and Rich also drops it when output is piped.
+- **Logging.** The library's log records are shown through a console handler on stderr, so they do not tear a progress bar. `--log-file` also writes a detailed log, and a redaction filter removes secrets from what is shown.
 
-CodeQL runs through GitHub's default setup rather than a workflow file.
+## Exit codes
 
-## Branch governance
+| Code | Meaning |
+| --- | --- |
+| 0 | Success |
+| 1 | The operation failed |
+| 2 | The command or a setting was invalid |
+| 130 | Stopped with Ctrl-C |
 
-The `main` ruleset in `.github/rulesets/main.json` is applied by `scripts/apply_repo_settings.py`. It requires:
+The codes are defined in `cli/common.py`. See the [exit codes guide](guides/cli/exit-codes.md) for what users see.
 
-- a pull request with a code owner review and resolved conversations, squash merge only
-- the `ci` and `dependency-review` checks, with the branch up to date
-- CodeQL results
-- no deletion and no force push
+## Errors
 
-Repository admins can bypass through a pull request so a solo maintainer is not locked out.
+Library errors carry a message and a hint, and `output.error_from` prints both. Anything unexpected travels up to `run()`, which prints the exception type and message and exits with 1. A traceback is shown only with `--verbose`, and never with local variables, since they can hold secrets. Typer's own pretty tracebacks are switched off for the same reason.
 
-## Release flow
+## Progress
 
-1. Bump `__version__` and update `CHANGELOG.md` in a pull request.
-2. After merge, publish a GitHub release tagged `v<version>`.
-3. `release.yml` builds the sdist and wheel in one job, then a second job in the `pypi` environment publishes them using OpenID Connect. No API token is stored, and only the publish job gets the `id-token` permission.
+A reporter is anything that can be called with a download event, plus `start()` and `close()`. There are three: a progress bar, plain lines, and one that shows nothing. `make_reporter` picks one from `--progress`. `--quiet` and `--json` always get the silent one, and `auto` chooses the bar on a terminal and plain lines otherwise.
 
-## Template lifecycle
+## Settings file
 
-GitHub copies files, not settings. A new repo therefore needs three steps: run **Init** to replace the template owner and name, rename the example package, and run the settings script to apply protections and the ruleset.
+The file is TOML whose keys are option names. It is `--config`, else `rayohx.toml` in the current folder, else the per-user file (`%APPDATA%\rayohx\config.toml` on Windows, `~/.config/rayohx/config.toml` elsewhere). A key that is not an option is an error, with a "did you mean" hint, so a typo never does nothing. `url`, `output`, `json` and `help` cannot be set there. `--no-config` ignores all settings files.
+
+## Packaging
+
+- The console script is `rayohx = rayohx_cli.cli:run`.
+- The package is released to PyPI as compiled wheels (`setup.py` compiles it with Nuitka when `PYD_BUILD=1`); see [packaging](packaging.md) and [releasing](releasing.md).
+- It depends on the `rayohx` library on PyPI for all of the work. The library lives in the [RayoHX](https://github.com/coldsofttech/RayoHX) repository. The installers, which bundle the published command line, live in [RayoHX-Installer](https://github.com/coldsofttech/RayoHX-Installer).

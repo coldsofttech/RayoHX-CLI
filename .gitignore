@@ -36,7 +36,16 @@ dist/
 .mypy_cache/
 .ruff_cache/
 .pytest_cache/
+.hypothesis/
 .coverage
 .coverage.*
 htmlcov/
 coverage.xml
+
+.temp/
+
+# Smoke-test scripts (scripts/smoke): virtual environment, built wheels and server data
+scripts/smoke/.venv/
+scripts/smoke/wheels/
+scripts/smoke/data/
+scripts/smoke/*.log

@@ -14,11 +14,14 @@ permissions:
 
 jobs:
   pip-audit:
+    name: pip-audit
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v7
-      - uses: astral-sh/setup-uv@v10.4.0
+      - name: Check out the repository
+        uses: actions/checkout@v7
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v10.4.0
       - name: Export locked dependencies
         run: uv export --locked --no-emit-project --no-hashes --format requirements-txt -o requirements-audit.txt
       - name: Audit

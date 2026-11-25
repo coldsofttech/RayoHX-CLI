@@ -24,6 +24,13 @@ body:
       label: Version
       description: Release or commit you are using.
   - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: Operating system and version, Python version, and how you installed it.
+      placeholder: |
+        Windows 11, Python 3.13, installed with uv tool install
+  - type: textarea
     id: logs
     attributes:
       label: Logs or screenshots

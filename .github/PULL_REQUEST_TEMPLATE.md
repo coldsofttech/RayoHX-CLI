@@ -12,3 +12,4 @@
 - [ ] `CHANGELOG.md` has a short `[Unreleased]` entry
 - [ ] README or docs are updated if behavior changed
 - [ ] No secrets or personal data are included
+- [ ] Workflow changes: `actionlint` passes

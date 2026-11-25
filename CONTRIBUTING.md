@@ -11,8 +11,8 @@ Open an issue using one of the provided forms. Search existing issues first. For
 1. Fork the repository and create a branch from `main`.
 2. Make your change, keeping it focused on one thing.
 3. Set up with [uv](https://docs.astral.sh/uv/): `uv sync`, then `uv run pre-commit install --hook-type pre-commit --hook-type post-commit`.
-4. Run `uv run pytest`, `uv run ruff check .` and `uv run mypy` before you push.
-5. Add an entry under `[Unreleased]` in `CHANGELOG.md` (one or two lines, written from a reader's point of view).
+4. Run `uv run pytest`, `uv run ruff check .` and `uv run mypy` before you push. The tests use the shared `rayohx-pytest` plugin from the [RayoHX](https://github.com/coldsofttech/RayoHX) repository, which `uv sync` installs from git.
+5. Add an entry under `[Unreleased]` in `CHANGELOG.md` (one or two lines, written from a reader's point of view). If commands, options or exit codes changed, update the [command line guide](docs/guides/cli.md) too.
 6. Open a pull request and fill in the template.
 
 ## Pull request rules
