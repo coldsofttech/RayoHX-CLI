@@ -6,17 +6,20 @@ result can be piped or captured while its messages still reach the person. Rich 
 ``print``.
 """
 
+from __future__ import annotations
+
 import json
 import logging
 from dataclasses import dataclass
-from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
-from rayohx import configure_logging as configure_library_logging
-from rayohx.errors import RayoHXError
-from rayohx.logs import RedactionFilter
 from rich.console import Console
 from rich.text import Text
+
+if TYPE_CHECKING:
+    from pathlib import Path
+
+    from rayohx.errors import RayoHXError
 
 console = Console()
 err_console = Console(stderr=True)
@@ -104,6 +107,9 @@ def configure_logging(level: int, *, verbose: bool, log_file: Path | None = None
 
     With ``log_file`` everything (down to debug) is also written there, with secrets removed.
     """
+    from rayohx import configure_logging as configure_library_logging
+    from rayohx.logs import RedactionFilter
+
     global _handler
     logger = logging.getLogger("rayohx")
     if _handler is not None:

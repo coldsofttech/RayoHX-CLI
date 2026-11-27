@@ -1,21 +1,49 @@
 """The root command: the program's name, help, and the options every command takes."""
 
-import logging
-from collections.abc import Mapping
-from pathlib import Path
-from typing import Annotated
+from __future__ import annotations
 
-import click
+import importlib
+import logging
+from pathlib import Path
+from typing import TYPE_CHECKING, Annotated
+
 import typer
-from rayohx import __version__
-from rayohx.errors import ConfigurationError
+from typer.core import TyperGroup
 
 from rayohx_cli import output
-from rayohx_cli.cli.common import usage_error
-from rayohx_cli.settings import find_config, load_config
+from rayohx_cli.cli.common import loaded_commands, usage_error
+
+if TYPE_CHECKING:
+    from typer import _click as click
+
+# Each command lives in its own module, which is imported only when the command is needed.
+COMMAND_MODULES = {
+    "clean": "rayohx_cli.cli.clean",
+    "config": "rayohx_cli.cli.config",
+    "download": "rayohx_cli.cli.download",
+    "info": "rayohx_cli.cli.info",
+}
+
+
+class LazyGroup(TyperGroup):
+    """A command group that imports a command's module the first time it is looked up."""
+
+    def list_commands(self, ctx: click.Context) -> list[str]:
+        return sorted(set(super().list_commands(ctx)) | set(COMMAND_MODULES))
+
+    def get_command(self, ctx: click.Context, cmd_name: str) -> click.Command | None:
+        command = super().get_command(ctx, cmd_name)
+        if command is None and cmd_name in COMMAND_MODULES:
+            module = importlib.import_module(COMMAND_MODULES[cmd_name])
+            command = typer.main.get_command(module.cli)
+            command.name = cmd_name
+            self.add_command(command)
+        return command
+
 
 app = typer.Typer(
     name="rayohx",
+    cls=LazyGroup,
     help=(
         "Download HLS (.m3u8) streams: pick the quality, audio and subtitles, and save "
         "one file. Use [bold]rayohx info URL[/bold] to look first, "
@@ -30,6 +58,8 @@ app = typer.Typer(
 
 def _show_version(value: bool) -> None:
     if value:
+        from rayohx import __version__
+
         output.console.print(f"rayohx {__version__}")
         raise typer.Exit
 
@@ -89,11 +119,15 @@ def main(
     output.configure_logging(level, verbose=verbose, log_file=log_file)
     if no_config:
         return
+    from rayohx.errors import ConfigurationError
+
+    from rayohx_cli.settings import find_config, load_config
+
     try:
         path = find_config(config)
         if path is None:
             return
-        commands: Mapping[str, click.Command] = getattr(typer.main.get_command(app), "commands", {})
+        commands = loaded_commands(ctx)
         known = {opt.name for command in commands.values() for opt in command.params if opt.name}
         loaded = load_config(path, known)
     except ConfigurationError as exc:

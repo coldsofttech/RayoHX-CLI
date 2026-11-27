@@ -20,8 +20,7 @@ classifiers = [
   "Typing :: Typed",
 ]
 dependencies = [
-  "rayohx>=0.1.0",
-  "click>=8.5.1",
+  "rayohx>=0.1.1",
   "rich>=13.9",
   "typer>=0.29.1",
 ]
@@ -47,16 +46,22 @@ where = ["src"]
 [tool.cibuildwheel]
 build = "cp311-* cp312-* cp313-* cp314-* cp315-*"
 environment = { PYD_BUILD = "1" }
-test-requires = "pytest rayohx-pytest@git+https://github.com/coldsofttech/RayoHX@feat/rayohx-pytest#subdirectory=packages/pytest"
+test-requires = "pytest rayohx-pytest@git+https://github.com/coldsofttech/RayoHX@pytest-v0.1.0#subdirectory=packages/pytest"
 test-command = "pytest -o addopts= {project}/tests/unit"
+
+# 64-bit only: cryptography publishes no 32-bit Windows wheel, so a 32-bit build could not install it.
+[tool.cibuildwheel.windows]
+archs = ["AMD64"]
 
 # Shared test plugin from the RayoHX repository; not published to PyPI. Pin a tag once one exists.
 [tool.uv.sources]
-rayohx-pytest = { git = "https://github.com/coldsofttech/RayoHX", subdirectory = "packages/pytest", branch = "feat/rayohx-pytest" }
+rayohx-pytest = { git = "https://github.com/coldsofttech/RayoHX", subdirectory = "packages/pytest", tag = "pytest-v0.1.0" }
 
 [dependency-groups]
 dev = [
   "mypy>=1.13",
+  "pip-licenses>=5.0",
+  "pre-commit>=4.0",
   "pytest>=8.3",
   "pytest-cov>=6.0",
   "pytest-xdist>=3.6",

@@ -1,15 +1,14 @@
 """The ``info`` command: show what a stream offers without downloading it."""
 
 import typer
-from rayohx import MasterPlaylist, inspect, inspect_text, playlist_to_dict, select_stream
-from rayohx.errors import ConfigurationError, RayoHXError
 
-from rayohx_cli import output, params, render
+from rayohx_cli import output, params
 from rayohx_cli.cli.common import EXIT_FAILED, make_config, open_source, usage_error
-from rayohx_cli.cli.root import app
+
+cli = typer.Typer(rich_markup_mode="rich")
 
 
-@app.command()
+@cli.command()
 def info(
     url: params.Url,
     playlist_file: params.PlaylistFile = None,
@@ -58,6 +57,11 @@ def info(
     Lists the streams (size, bit rate, codecs), the audio and subtitle tracks, and which of them
     a download with the same options would pick (marked with *).
     """
+    from rayohx import MasterPlaylist, inspect, inspect_text, playlist_to_dict, select_stream
+    from rayohx.errors import ConfigurationError, RayoHXError
+
+    from rayohx_cli import render
+
     config = make_config(
         quality=quality,
         max_resolution=max_resolution,

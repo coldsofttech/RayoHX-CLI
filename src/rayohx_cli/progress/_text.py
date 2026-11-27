@@ -1,13 +1,20 @@
 """Turning download events into text for the reporters."""
 
-from rayohx import DownloadProgress, EventType
-from rayohx.events import DownloadEvent
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
 
 from rayohx_cli import format as fmt
+
+if TYPE_CHECKING:
+    from rayohx import DownloadProgress
+    from rayohx.events import DownloadEvent
 
 
 def narrate(event: DownloadEvent, *, verbose: bool = False) -> list[str]:
     """What an event means to a person, as lines of text (usually none or one)."""
+    from rayohx import EventType
+
     kind = event.type
     data = event.data
     if kind is EventType.STREAM_SELECTED:

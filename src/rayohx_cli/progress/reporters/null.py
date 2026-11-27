@@ -1,6 +1,11 @@
 """The reporter that shows nothing."""
 
-from rayohx.events import DownloadEvent
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from rayohx.events import DownloadEvent
 
 
 class NullReporter:

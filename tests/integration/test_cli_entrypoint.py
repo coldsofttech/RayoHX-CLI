@@ -70,7 +70,7 @@ def test_errors_go_to_stderr(local_server: ServerFactory) -> None:
 
 
 def test_info_and_download_against_a_server(tmp_path: Path, local_server: ServerFactory) -> None:
-    server = local_server(_routes())  # type: ignore[arg-type]
+    server = local_server(_routes())
     url = f"{server.url}/index.m3u8"
     info = _run(_script(), "info", url, "--json")
     out = tmp_path / "clip.ts"

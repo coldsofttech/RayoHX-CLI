@@ -1,18 +1,22 @@
 """How a download runs and ends: pausing with a key, stopping on Ctrl-C, and the result."""
 
+from __future__ import annotations
+
 import signal
 import sys
-from collections.abc import Callable, Generator
 from contextlib import contextmanager
-from types import FrameType
+from typing import TYPE_CHECKING
 
 import typer
-from rayohx import Downloader, DownloadResult, result_to_dict
-from rayohx.errors import RayoHXError
 
-from rayohx_cli import format as fmt
 from rayohx_cli import output
 from rayohx_cli.cli.common import EXIT_CANCELLED, EXIT_FAILED
+
+if TYPE_CHECKING:
+    from collections.abc import Callable, Generator
+    from types import FrameType
+
+    from rayohx import Downloader, DownloadResult
 
 
 @contextmanager
@@ -164,6 +168,11 @@ def finish(
     With ``documents`` (several downloads), the JSON result is added to it instead of printed,
     so the caller can print one array at the end.
     """
+    from rayohx import result_to_dict
+    from rayohx.errors import RayoHXError
+
+    from rayohx_cli import format as fmt
+
     if json_output and documents is not None:
         documents.append(result_to_dict(result))
     elif json_output:

@@ -13,8 +13,6 @@ from collections.abc import Collection, Mapping
 from pathlib import Path
 from typing import Any
 
-from rayohx.errors import ConfigurationError
-
 FILE_NAME = "rayohx.toml"
 #: Options that make no sense as a default.
 EXCLUDED = frozenset({"url", "urls", "input_file", "base_url", "output", "help", "json"})
@@ -38,6 +36,8 @@ def find_config(
     Raises:
         ConfigurationError: If a file was named and does not exist.
     """
+    from rayohx.errors import ConfigurationError
+
     if explicit is not None:
         if not explicit.is_file():
             raise ConfigurationError(f"The settings file {explicit} does not exist.")
@@ -57,6 +57,8 @@ def load_config(path: Path, valid: Collection[str]) -> dict[str, Any]:
     Raises:
         ConfigurationError: If the file is not valid TOML or has a key that is not an option.
     """
+    from rayohx.errors import ConfigurationError
+
     try:
         raw = tomllib.loads(path.read_text(encoding="utf-8"))
     except (OSError, UnicodeDecodeError) as exc:

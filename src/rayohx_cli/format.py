@@ -1,15 +1,17 @@
 """Turning numbers into short text for people."""
 
-from rayohx.errors import format_bytes
-
 
 def size(count: int | float) -> str:
     """Bytes as ``1.5 MiB``."""
+    from rayohx.errors import format_bytes
+
     return format_bytes(int(count))
 
 
 def rate(bytes_per_second: float) -> str:
     """A speed as ``4.2 MiB/s``."""
+    from rayohx.errors import format_bytes
+
     return f"{format_bytes(int(bytes_per_second))}/s"
 
 

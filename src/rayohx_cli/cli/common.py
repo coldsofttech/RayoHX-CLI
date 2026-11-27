@@ -7,15 +7,16 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING, NoReturn
 
 import typer
-from rayohx.config import DownloadConfig
-from rayohx.errors import ConfigurationError, RayoHXError
 
 from rayohx_cli import output
-from rayohx_cli.values import build_config
 
 if TYPE_CHECKING:
-    from collections.abc import Sequence
+    from collections.abc import Mapping, Sequence
     from pathlib import Path
+
+    from rayohx.config import DownloadConfig
+    from rayohx.errors import RayoHXError
+    from typer import _click as click
 
 EXIT_FAILED = 1
 EXIT_USAGE = 2
@@ -27,8 +28,23 @@ def usage_error(exc: RayoHXError) -> NoReturn:
     raise typer.Exit(EXIT_USAGE)
 
 
+def loaded_commands(ctx: typer.Context) -> Mapping[str, click.Command]:
+    """Every command of the program, importing the ones not loaded yet."""
+    from typer.core import TyperGroup
+
+    group = ctx.find_root().command
+    if not isinstance(group, TyperGroup):
+        return {}
+    found = {name: group.get_command(ctx, name) for name in group.list_commands(ctx)}
+    return {name: command for name, command in found.items() if command is not None}
+
+
 def make_config(**options: object) -> DownloadConfig:
     """Build the engine's settings, turning a bad value into a usage error."""
+    from rayohx.errors import ConfigurationError
+
+    from rayohx_cli.values import build_config
+
     try:
         return build_config(**options)  # type: ignore[arg-type]
     except ConfigurationError as exc:
@@ -37,6 +53,8 @@ def make_config(**options: object) -> DownloadConfig:
 
 def read_playlist_file(path: Path) -> str:
     """The playlist text in ``path``, or a usage error if it cannot be read."""
+    from rayohx.errors import ConfigurationError
+
     try:
         return path.read_text(encoding="utf-8")
     except (OSError, UnicodeDecodeError) as exc:
@@ -46,6 +64,8 @@ def read_playlist_file(path: Path) -> str:
 
 def gather_urls(urls: Sequence[str], input_file: Path | None) -> list[str]:
     """The addresses given as arguments, then those listed in ``input_file`` (``-`` is stdin)."""
+    from rayohx.errors import ConfigurationError
+
     found = list(urls)
     if input_file is not None:
         try:

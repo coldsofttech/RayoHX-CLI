@@ -7,7 +7,6 @@ piped. Exit codes: 0 success, 1 the operation failed, 2 the command or a setting
 """
 
 from rayohx_cli import output
-from rayohx_cli.cli import clean, config, download, info  # noqa: F401  (registers the commands)
 from rayohx_cli.cli.common import EXIT_CANCELLED, EXIT_FAILED, EXIT_USAGE
 from rayohx_cli.cli.root import app
 

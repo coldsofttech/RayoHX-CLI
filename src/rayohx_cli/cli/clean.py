@@ -5,12 +5,12 @@ from typing import Annotated
 
 import typer
 
-from rayohx_cli import format as fmt
 from rayohx_cli import output
-from rayohx_cli.cli.root import app
+
+cli = typer.Typer(rich_markup_mode="rich")
 
 
-@app.command()
+@cli.command()
 def clean(
     folders: Annotated[
         list[Path] | None,
@@ -37,6 +37,8 @@ def clean(
     running download are never removed. The folders removed are printed on stdout.
     """
     from rayohx import find_workspaces, remove_workspaces
+
+    from rayohx_cli import format as fmt
 
     found = find_workspaces(folders, older_than)
     candidates = [w for w in found if not w.in_use]

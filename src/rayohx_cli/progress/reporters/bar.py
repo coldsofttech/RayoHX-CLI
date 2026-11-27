@@ -1,13 +1,15 @@
 """The reporter that draws a live progress bar."""
 
-import threading
+from __future__ import annotations
 
-from rayohx import EventType
-from rayohx.events import DownloadEvent
-from rich.console import Console
-from rich.text import Text
+import threading
+from typing import TYPE_CHECKING
 
 from rayohx_cli.progress._text import detail, narrate, percent
+
+if TYPE_CHECKING:
+    from rayohx.events import DownloadEvent
+    from rich.console import Console
 
 
 class BarReporter:
@@ -43,6 +45,9 @@ class BarReporter:
             self._running = True
 
     def __call__(self, event: DownloadEvent) -> None:
+        from rayohx import EventType
+        from rich.text import Text
+
         with self._lock:
             for line in narrate(event, verbose=self._verbose):
                 self._progress.console.print(Text(line), soft_wrap=True)

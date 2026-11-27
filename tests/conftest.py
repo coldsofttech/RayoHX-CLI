@@ -131,7 +131,7 @@ def fake_downloader(monkeypatch: pytest.MonkeyPatch) -> type[FakeDownloader]:
     FakeDownloader.state = DownloadState.COMPLETED
     FakeDownloader.output = Path("saved.mp4")
     FakeDownloader.error = None
-    monkeypatch.setattr("rayohx_cli.cli.download.Downloader", FakeDownloader)
+    monkeypatch.setattr("rayohx.Downloader", FakeDownloader)
     return FakeDownloader
 
 

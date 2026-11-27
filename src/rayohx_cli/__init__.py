@@ -1,3 +1,3 @@
 """Command line interface for rayohx. Rename it to your CLI's import name."""
 
-__version__ = "0.1.0"
+__version__ = "0.1.1"

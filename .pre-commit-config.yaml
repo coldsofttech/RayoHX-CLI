@@ -41,6 +41,12 @@ repos:
       - id: uv-lock
   - repo: local
     hooks:
+      - id: rayohx-pytest-git-source
+        name: rayohx release sources
+        entry: python scripts/dev/local.py
+        language: system
+        files: ^(pyproject\.toml|uv\.lock)$
+        pass_filenames: false
       - id: mypy
         name: mypy
         entry: uv run mypy

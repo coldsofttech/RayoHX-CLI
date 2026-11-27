@@ -1,8 +1,11 @@
 """The shape every reporter has."""
 
-from typing import Protocol
+from __future__ import annotations
 
-from rayohx.events import DownloadEvent
+from typing import TYPE_CHECKING, Protocol
+
+if TYPE_CHECKING:
+    from rayohx.events import DownloadEvent
 
 
 class Reporter(Protocol):

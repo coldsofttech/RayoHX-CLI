@@ -4,8 +4,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 import typer
-from rayohx import Downloader, OutputFormat, RemuxBackend, StorageStrategy
-from rayohx.errors import ConfigurationError
+from rayohx import OutputFormat, RemuxBackend, StorageStrategy
 
 from rayohx_cli import output, params
 from rayohx_cli.cli.common import (
@@ -17,14 +16,15 @@ from rayohx_cli.cli.common import (
     usage_error,
 )
 from rayohx_cli.cli.lifecycle import finish, graceful_interrupt, pause_toggle
-from rayohx_cli.cli.root import app
-from rayohx_cli.progress import MODES, make_reporter
 
 if TYPE_CHECKING:
+    from rayohx import Downloader
     from rayohx.config import DownloadConfig
 
+cli = typer.Typer(rich_markup_mode="rich")
 
-@app.command()
+
+@cli.command()
 def download(
     urls: params.Urls = None,
     output_path: params.OutputPath = None,
@@ -97,6 +97,10 @@ def download(
     continue where they stopped when you run the same command again. Press Ctrl-C once to stop
     cleanly.
     """
+    from rayohx.errors import ConfigurationError
+
+    from rayohx_cli.progress import MODES
+
     if progress not in MODES:
         raise typer.BadParameter(f"must be one of {', '.join(MODES)}.", param_hint="--progress")
     config = make_config(
@@ -183,10 +187,15 @@ def run_one(
     progress: str,
     json_output: bool,
     documents: list[dict[str, object]] | None = None,
-    downloader: Downloader | None = None,
+    downloader: "Downloader | None" = None,
     events: bool = False,
 ) -> None:
     """Download one address with a progress display, then report how it ended."""
+    from rayohx import Downloader
+    from rayohx.errors import ConfigurationError
+
+    from rayohx_cli.progress import make_reporter
+
     try:
         downloader = downloader or Downloader(
             source.url, output=output_path, config=config, playlist_text=source.text
@@ -224,7 +233,8 @@ def run_many(
     events: bool = False,
 ) -> None:
     """Download several addresses in turn into one folder."""
-    from rayohx import batch_outputs
+    from rayohx import Downloader, batch_outputs
+    from rayohx.errors import ConfigurationError
 
     if output_path is not None and output_path.exists() and not output_path.is_dir():
         usage_error(

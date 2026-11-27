@@ -2,14 +2,12 @@
 
 from __future__ import annotations
 
-from pathlib import Path
 from typing import TYPE_CHECKING, Annotated
 
 import typer
 
 from rayohx_cli import output
-from rayohx_cli.cli.common import usage_error
-from rayohx_cli.cli.root import app
+from rayohx_cli.cli.common import loaded_commands, usage_error
 
 if TYPE_CHECKING:
     from collections.abc import Mapping
@@ -27,7 +25,10 @@ def environment_settings(environ: Mapping[str, str]) -> dict[str, str]:
     }
 
 
-@app.command()
+cli = typer.Typer(rich_markup_mode="rich")
+
+
+@cli.command()
 def config(
     ctx: typer.Context,
     json_output: Annotated[
@@ -39,6 +40,7 @@ def config(
     Values that may be secret (proxies, passwords, cookies, headers, keys) are hidden.
     """
     import os
+    from pathlib import Path
 
     from rayohx.errors import ConfigurationError
 
@@ -53,7 +55,7 @@ def config(
         try:
             path = find_config(explicit)
             if path is not None:
-                commands = getattr(typer.main.get_command(app), "commands", {})
+                commands = loaded_commands(ctx)
                 known = {o.name for c in commands.values() for o in c.params if o.name}
                 values = load_config(path, known)
         except ConfigurationError as exc:

@@ -2,9 +2,6 @@
 
 from typing import Any
 
-from rich.table import Table
-from rich.text import Text
-
 from rayohx_cli import format as fmt
 from rayohx_cli import output
 
@@ -22,6 +19,8 @@ def _yes(value: object) -> str:
 
 
 def _master(data: dict[str, Any]) -> None:
+    from rich.table import Table
+
     output.data(f"Master playlist: {data['url']}")
     selection = data.get("selection") or {}
     variants = data["variants"]
@@ -69,6 +68,8 @@ def _master(data: dict[str, Any]) -> None:
 def _tracks(tracks: list[dict[str, Any]], title: str, *, with_channels: bool) -> None:
     if not tracks:
         return
+    from rich.table import Table
+
     show_channels = with_channels and any(track.get("channels") for track in tracks)
     show_forced = any(track.get("forced") for track in tracks)
     table = Table(title=title, title_justify="left")
@@ -92,6 +93,8 @@ def _tracks(tracks: list[dict[str, Any]], title: str, *, with_channels: bool) ->
 
 
 def _selection(data: dict[str, Any], selection: dict[str, Any]) -> None:
+    from rich.text import Text
+
     variant = data["variants"][selection["variant"] - 1]
     size = variant["resolution"] or "audio only"
     lines = [
@@ -106,6 +109,8 @@ def _selection(data: dict[str, Any], selection: dict[str, Any]) -> None:
 
 
 def _media(data: dict[str, Any]) -> None:
+    from rich.table import Table
+
     output.data(f"Media playlist: {data['url']}")
     table = Table(show_header=False)
     rows = [
