@@ -21,13 +21,13 @@ jobs:
       - name: Check out the repository
         uses: actions/checkout@v7
       - name: Set up uv
-        uses: astral-sh/setup-uv@v10.4.0
-      - name: Install the locked dependencies
-        run: uv sync --locked
+        uses: ./.github/actions/setup-uv
       - name: Run the pre-commit checks
         uses: pre-commit/action@v3.0.1
         env:
           SKIP: pytest # covered by the test job across all Python versions
+      - name: Check dependency licenses
+        run: uv run pip-licenses --from=mixed --partial-match --fail-on="GPL" --format=plain
 
   test:
     name: test (${{ matrix.os }}, ${{ matrix.python-version }})
@@ -47,16 +47,14 @@ jobs:
       - name: Check out the repository
         uses: actions/checkout@v7
       - name: Set up uv
-        uses: astral-sh/setup-uv@v10.4.0
+        uses: ./.github/actions/setup-uv
         with:
           python-version: ${{ matrix.python-version }}
-      - name: Install the locked dependencies
-        run: uv sync --locked
       - name: Run the unit tests
         run: uv run pytest
 
-  integration:
-    name: integration (${{ matrix.os }}, ${{ matrix.python-version }})
+  int-tests:
+    name: int-tests (${{ matrix.os }}, ${{ matrix.python-version }})
     runs-on: ${{ matrix.os }}
     timeout-minutes: 20
     strategy:
@@ -73,11 +71,9 @@ jobs:
       - name: Check out the repository
         uses: actions/checkout@v7
       - name: Set up uv
-        uses: astral-sh/setup-uv@v10.4.0
+        uses: ./.github/actions/setup-uv
         with:
           python-version: ${{ matrix.python-version }}
-      - name: Install the locked dependencies
-        run: uv sync --locked
       - name: Run the integration tests
         run: uv run pytest -m integration --no-cov
 
@@ -89,7 +85,9 @@ jobs:
       - name: Check out the repository
         uses: actions/checkout@v7
       - name: Set up uv
-        uses: astral-sh/setup-uv@v10.4.0
+        uses: ./.github/actions/setup-uv
+        with:
+          sync: "false"
       - name: Build the packages
         run: PYD_BUILD=1 uv build --wheel
       - name: Check the package metadata
@@ -109,17 +107,13 @@ jobs:
   ci:
     name: ci (required check)
     if: always()
-    needs: [lint, test, integration, build]
+    needs: [lint, test, int-tests, build]
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
       - name: Check results
+        env:
+          NEEDS: ${{ toJSON(needs) }}
         run: |
-          echo "lint:        ${{ needs.lint.result }}"
-          echo "test:        ${{ needs.test.result }}"
-          echo "integration: ${{ needs.integration.result }}"
-          echo "build:       ${{ needs.build.result }}"
-          [ "${{ needs.lint.result }}" = success ] &&
-          [ "${{ needs.test.result }}" = success ] &&
-          [ "${{ needs.integration.result }}" = success ] &&
-          [ "${{ needs.build.result }}" = success ]
+          jq -r 'to_entries[] | "\(.key): \(.value.result)"' <<< "$NEEDS"
+          jq -e 'all(.[]; .result == "success")' <<< "$NEEDS" > /dev/null

@@ -15,11 +15,11 @@ rayohx info https://cdn.example.com/vod/master.m3u8 --playlist-file master.m3u8
 ```
 
 `--playlist-file PATH` reads the playlist from a file instead of fetching it (the address is still
-needed to resolve relative addresses), like [`rayohx.inspect_text`](https://github.com/coldsofttech/RayoHX/blob/main/packages/core/docs/guides/python/inspecting.md#inspect_text). The file can also be given in
+needed to resolve relative addresses), like [`rayohx.inspect_text`](https://github.com/coldsofttech/RayoHX/blob/main/docs/guides/python/inspecting.md#inspect_text). The file can also be given in
 place of the address, with `--base-url` for its relative addresses.
 
-It does the same work as [`rayohx.inspect`](https://github.com/coldsofttech/RayoHX/blob/main/packages/core/docs/guides/python/inspecting.md) followed by
-[`rayohx.select_stream`](https://github.com/coldsofttech/RayoHX/blob/main/packages/core/docs/guides/python/selecting.md).
+It does the same work as [`rayohx.inspect`](https://github.com/coldsofttech/RayoHX/blob/main/docs/guides/python/inspecting.md) followed by
+[`rayohx.select_stream`](https://github.com/coldsofttech/RayoHX/blob/main/docs/guides/python/selecting.md).
 
 ## What it shows
 
@@ -187,7 +187,7 @@ For a media playlist the fields are `type` (`"media"`), `url`, `segments`, `dura
 `target_duration`, `container`, `complete`, `media_sequence`, `encryption` (a list of methods),
 `initialization_section`, `byte_ranges` and `discontinuities`.
 
-The same document is returned by [`rayohx.playlist_to_dict`](https://github.com/coldsofttech/RayoHX/blob/main/packages/core/docs/guides/python/inspecting.md), so a Python
+The same document is returned by [`rayohx.playlist_to_dict`](https://github.com/coldsofttech/RayoHX/blob/main/docs/guides/python/inspecting.md), so a Python
 program and a shell script see the same thing.
 
 ## Errors

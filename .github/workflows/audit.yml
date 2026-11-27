@@ -2,6 +2,7 @@ name: Audit
 
 # Checks locked dependencies for known vulnerabilities. Dependency review only covers
 # pull requests, so this catches advisories published against dependencies already in use.
+# Covers the runtime and development dependencies of the command line.
 on:
   schedule:
     - cron: "0 6 * * 1"
@@ -21,8 +22,10 @@ jobs:
       - name: Check out the repository
         uses: actions/checkout@v7
       - name: Set up uv
-        uses: astral-sh/setup-uv@v10.4.0
+        uses: ./.github/actions/setup-uv
+        with:
+          sync: "false"
       - name: Export locked dependencies
-        run: uv export --locked --no-emit-project --no-hashes --format requirements-txt -o requirements-audit.txt
+        run: uv export --locked --all-groups --no-emit-project --no-hashes --format requirements-txt -o requirements-audit.txt
       - name: Audit
         run: uvx pip-audit --requirement requirements-audit.txt --no-deps --disable-pip

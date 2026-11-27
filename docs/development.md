@@ -1,6 +1,6 @@
 # Development
 
-How to work on this repository, the `rayohx` command line. For how it is built, see [architecture](architecture.md); for using the command, see the [command line guide](guides/cli.md). The pull request process is in the [contributing guide](../CONTRIBUTING.md), tests are described in [testing](testing.md) and releases in [releasing](releasing.md).
+How to work on this repository, the `rayohx` command line. For how it is built, see [architecture](architecture.md); for using the command, see the [command line guide](guides/cli.md). The pull request process is in the [contributing guide](../CONTRIBUTING.md), tests are described in [testing](testing.md), and packaging and releases in [packaging and releasing](packaging.md).
 
 ## Set up and run
 
@@ -24,7 +24,7 @@ uv run mypy
 uv run pytest tests/unit --no-cov
 ```
 
-How the tests are organized, the integration and frozen tests, coverage, the shared `rayohx-pytest` plugin and the smoke test of the compiled build are in [testing](testing.md). CI runs the same checks (`ci.yml`), plus pre-commit on the changed files.
+How the tests are organized, the integration and frozen tests, coverage, the shared `rayohx-pytest` plugin and the smoke test of the compiled build are in [testing](testing.md). CI (`ci.yml`) runs the same checks as separate `lint`, `test`, `int-tests` and `build` jobs, with `ci (required check)` as the single check the branch ruleset needs. The `lint` job also runs pre-commit and fails on GPL-licensed dependencies (`uv run pip-licenses --from=mixed --partial-match --fail-on="GPL" --format=plain` runs the same check locally). Two more workflows run outside that check: `security.yml` (Semgrep, results in the Security tab) and `audit.yml` (`pip-audit` on the locked dependencies, weekly and when `uv.lock` changes).
 
 ## Working with the library
 

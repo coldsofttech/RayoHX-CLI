@@ -17,9 +17,9 @@ rayohx download URL1 URL2 -o videos
 rayohx download --input-file urls.txt -o videos
 ```
 
-It does the same work as [`rayohx.download`](https://github.com/coldsofttech/RayoHX/blob/main/packages/core/docs/guides/python/downloading.md) and
-[`Downloader`](https://github.com/coldsofttech/RayoHX/blob/main/packages/core/docs/guides/python/downloading.md#downloader), and every option maps to a field of
-[`DownloadConfig`](https://github.com/coldsofttech/RayoHX/blob/main/packages/core/docs/guides/python/settings.md).
+It does the same work as [`rayohx.download`](https://github.com/coldsofttech/RayoHX/blob/main/docs/guides/python/downloading.md) and
+[`Downloader`](https://github.com/coldsofttech/RayoHX/blob/main/docs/guides/python/downloading.md#downloader), and every option maps to a field of
+[`DownloadConfig`](https://github.com/coldsofttech/RayoHX/blob/main/docs/guides/python/settings.md).
 
 Put the web address in quotes if it contains `&` or `?`, so your shell does not cut it short.
 
@@ -55,7 +55,7 @@ addresses resolve; without it, the playlist's addresses must all be absolute.
 rayohx download master.m3u8 --base-url https://cdn.example.com/vod/
 ```
 
-It does the same work as `Downloader(playlist_text=...)` in the [Python guide](https://github.com/coldsofttech/RayoHX/blob/main/packages/core/docs/guides/python/downloading.md#downloader).
+It does the same work as `Downloader(playlist_text=...)` in the [Python guide](https://github.com/coldsofttech/RayoHX/blob/main/docs/guides/python/downloading.md#downloader).
 
 ## What it prints
 
@@ -270,7 +270,7 @@ With `--json`, stdout holds one JSON document, also when the download fails or i
 ```
 
 When it fails, `success` is `false`, `output` is `null` and `error` says why. The same document is
-returned by [`rayohx.result_to_dict`](https://github.com/coldsofttech/RayoHX/blob/main/packages/core/docs/guides/python/downloading.md), and the progress block by
+returned by [`rayohx.result_to_dict`](https://github.com/coldsofttech/RayoHX/blob/main/docs/guides/python/downloading.md), and the progress block by
 `rayohx.progress_to_dict`.
 
 ## Examples

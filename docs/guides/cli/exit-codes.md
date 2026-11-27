@@ -73,4 +73,4 @@ written output file is never left in place of the real one).
 ## Where the errors come from
 
 The command line shows the library's own errors. Each one has a message and an optional hint; see
-the [Errors](https://github.com/coldsofttech/RayoHX/blob/main/packages/core/docs/guides/python/errors.md) page for the full list and what each means.
+the [Errors](https://github.com/coldsofttech/RayoHX/blob/main/docs/guides/python/errors.md) page for the full list and what each means.

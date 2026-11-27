@@ -1,9 +1,13 @@
 name: Release
 
-# Publishes to PyPI when a GitHub release is published (tag vX.Y.Z), using trusted publishing (no
-# stored tokens). Builds the command line (rayohx-cli) as compiled wheels (one Nuitka .pyd on
-# Windows, .so elsewhere) with cibuildwheel, one per OS, architecture and Python version, with no
-# sdist. Release rayohx (core) first: rayohx-cli depends on it on PyPI.
+# Runs when a GitHub release is published with a tag vX.Y.Z. It builds the command line (rayohx-cli)
+# as compiled wheels (one Nuitka .pyd on Windows, .so elsewhere) with cibuildwheel, one per OS,
+# architecture and Python version, with no sdist and so no .py sources. Once the `cli` environment is
+# approved (Settings > Environments), it publishes them to PyPI with trusted publishing (no stored
+# tokens) and attaches them to the release.
+#
+# The tag must match __version__ in src/rayohx_cli/__init__.py. rayohx-cli depends on the rayohx
+# package on PyPI, so release core (RayoHX) first.
 on:
   release:
     types: [published]
@@ -11,9 +15,14 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: release-${{ github.event.release.tag_name }}
+  cancel-in-progress: false
+
 jobs:
   check:
     name: check tag
+    if: startsWith(github.event.release.tag_name, 'v')
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -26,26 +35,30 @@ jobs:
           version="$(sed -nE 's/^__version__ = "([^"]+)".*/\1/p' src/rayohx_cli/__init__.py)"
           [ -n "$version" ] && [ "$TAG" = "v$version" ] || { echo "Tag $TAG does not match version $version"; exit 1; }
 
+  # One job per OS and Python version, so the wheels build in parallel.
   build:
-    name: build (${{ matrix.os }})
+    name: build (${{ matrix.os }}, cp${{ matrix.python }})
     needs: check
     runs-on: ${{ matrix.os }}
-    timeout-minutes: 45
+    timeout-minutes: 30
     strategy:
-      fail-fast: true
+      fail-fast: false
       matrix:
         os: [ubuntu-latest, ubuntu-24.04-arm, windows-latest, macos-15-intel, macos-latest]
+        python: ["311", "312", "313", "314", "315"]
     steps:
       - name: Check out the repository
         uses: actions/checkout@v7
       - name: Build the compiled wheels
         uses: pypa/cibuildwheel@v4.3.5
+        env:
+          CIBW_BUILD: cp${{ matrix.python }}-*
         with:
           output-dir: dist
       - name: Upload the distribution files
         uses: actions/upload-artifact@v7
         with:
-          name: dist-${{ matrix.os }}
+          name: dist-${{ matrix.os }}-cp${{ matrix.python }}
           path: dist/*.whl
 
   publish:
@@ -53,10 +66,13 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    environment: pypi
+    environment: cli
     permissions:
-      id-token: write
+      contents: write # attach files to the release
+      id-token: write # PyPI trusted publishing
     steps:
+      - name: Check out the repository
+        uses: actions/checkout@v7
       - name: Download the distribution files
         uses: actions/download-artifact@v8
         with:
@@ -65,3 +81,5 @@ jobs:
           path: dist/
       - name: Publish to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
+      - name: Attach the files to the release
+        uses: ./.github/actions/attach-release-files

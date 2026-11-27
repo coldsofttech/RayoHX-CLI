@@ -30,6 +30,7 @@ desktop.ini
 __pycache__/
 *.py[cod]
 .venv/
+.venv-*/
 build/
 dist/
 *.egg-info/
@@ -41,6 +42,16 @@ dist/
 .coverage.*
 htmlcov/
 coverage.xml
+
+# Compiled command line: Nuitka build folders and in-place extension modules, cibuildwheel output,
+# and PyInstaller output
+*.build/
+*.dist/
+*.onefile-build/
+*.pyd
+*.so
+wheelhouse/
+*.spec
 
 .temp/
 

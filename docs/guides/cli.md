@@ -2,7 +2,7 @@
 
 `rayohx` downloads HLS streams (`.m3u8`) to a file from your terminal. It is a thin front end over the
 Python package: the command line only reads your options and shows results, and all the work is done
-by the `rayohx` library. Nothing it does is hidden from the [Python guide](https://github.com/coldsofttech/RayoHX/blob/main/packages/core/docs/guides/python.md).
+by the `rayohx` library. Nothing it does is hidden from the [Python guide](https://github.com/coldsofttech/RayoHX/blob/main/docs/guides/python.md).
 
 ```bash
 rayohx info https://cdn.example.com/vod/master.m3u8

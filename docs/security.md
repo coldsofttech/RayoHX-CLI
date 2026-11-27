@@ -1,6 +1,6 @@
 # CLI security
 
-How the `rayohx` command protects secrets and the machine it runs on. To report a vulnerability, see [SECURITY.md](../SECURITY.md). The protections of the download engine itself (redaction, input checks, credentials per host, working folder, file names, FFmpeg, untrusted media) are in the [core security notes](https://github.com/coldsofttech/RayoHX/blob/main/packages/core/docs/security.md).
+How the `rayohx` command protects secrets and the machine it runs on. To report a vulnerability, see [SECURITY.md](../SECURITY.md). The protections of the download engine itself (redaction, input checks, credentials per host, working folder, file names, FFmpeg, untrusted media) are in the [core security notes](https://github.com/coldsofttech/RayoHX/blob/main/docs/security.md).
 
 ## Secrets you give it
 
@@ -26,7 +26,7 @@ How the `rayohx` command protects secrets and the machine it runs on. To report 
 
 ## What you install
 
-- **PyPI releases are published without stored tokens.** `release.yml` uploads through PyPI trusted publishing, after a reviewer approves the `pypi` environment. See [releasing](releasing.md).
+- **PyPI releases are published without stored tokens.** `release.yml` uploads through PyPI trusted publishing, after a reviewer approves the `cli` environment. See [packaging and releasing](packaging.md#releasing-to-pypi).
 - **The wheels hold compiled code only.** The release checks that a wheel has the compiled command line and no `.py` sources.
 - **The installers are separate.** The Windows setup and the Linux packages are built and released from the [RayoHX-Installer](https://github.com/coldsofttech/RayoHX-Installer) repository; their protections (per-user install, narrow uninstall, checksums, signing) are described in its security notes.
 
@@ -40,5 +40,6 @@ The command runs with your permissions and does not sandbox the media it downloa
 - **Weekly audit.** `audit.yml` checks the locked dependencies against known vulnerabilities every week and whenever `uv.lock` changes.
 - **Dependency review.** `dependency-review.yml` checks the dependencies a pull request adds or changes.
 - **Static analysis.** `security.yml` runs Semgrep on every pull request and every week, and sends the findings to code scanning.
+- **Licenses.** The `lint` job in `ci.yml` fails when a dependency has a GPL license.
 - **Updates.** Dependabot proposes updates to the Python dependencies and to the GitHub Actions, with a 7-day cooldown.
 - **Secret scanning.** The pre-commit hooks run gitleaks before a commit.

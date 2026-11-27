@@ -69,7 +69,7 @@ Read them with `rayohx_pytest.fixtures` or `rayohx_pytest.site`, not with a path
 
 ### Changing the plugin
 
-The plugin is not changed here. Change it in the RayoHX repository, tag it, and update the `tag` (or `branch`) of `rayohx-pytest` in `[tool.uv.sources]` and in `[tool.cibuildwheel] test-requires`, then run `uv lock`.
+The plugin is not changed here. Change it in the RayoHX repository, tag it (`pytest-vX.Y.Z`), then update `GIT_TAG` in `scripts/dev/local.py` and the tag in `[tool.cibuildwheel] test-requires`, and run `python scripts/dev/local.py` to rewrite `[tool.uv.sources]` and `uv.lock`.
 
 ## Helpers kept here
 
@@ -98,3 +98,7 @@ The [smoke test](../scripts/smoke/README.md) builds the compiled wheel and runs 
 - Use `local_server` and the fixtures from the plugin instead of starting servers by hand.
 - The conftest removes `RAYOHX_*` variables and settings files from the machine, so a test never depends on the developer's own set-up.
 - Never put real tokens or cookies in a test; use obvious fake values such as `hunter2-very-secret`.
+
+## Manual testing
+
+For trying the command against real streams by hand, see [Manual test streams](https://github.com/coldsofttech/RayoHX/blob/main/docs/manual-test-streams.md) in the RayoHX repository.

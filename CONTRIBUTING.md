@@ -15,6 +15,8 @@ Open an issue using one of the provided forms. Search existing issues first. For
 5. Add an entry under `[Unreleased]` in `CHANGELOG.md` (one or two lines, written from a reader's point of view). If commands, options or exit codes changed, update the [command line guide](docs/guides/cli.md) too.
 6. Open a pull request and fill in the template.
 
+See [development](docs/development.md) and [testing](docs/testing.md) for the details.
+
 ## Pull request rules
 
 - `main` is protected: changes land through pull requests that are squash-merged.

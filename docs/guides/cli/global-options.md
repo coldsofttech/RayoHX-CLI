@@ -25,7 +25,7 @@ rayohx --verbose info URL
 ## Version and help
 
 ```bash
-rayohx --version          # rayohx 0.1.0
+rayohx --version          # rayohx 0.1.1
 rayohx --help             # the commands
 rayohx download --help    # one command's options, grouped by purpose
 ```
@@ -52,7 +52,7 @@ rayohx --log-file rayohx.log download URL
 ```
 
 Tokens, signatures, passwords, cookies and proxy credentials are removed from the log, so it is
-safe to attach to a bug report. See also [Logging](https://github.com/coldsofttech/RayoHX/blob/main/packages/core/docs/guides/python/logging.md) for what the library logs.
+safe to attach to a bug report. See also [Logging](https://github.com/coldsofttech/RayoHX/blob/main/docs/guides/python/logging.md) for what the library logs.
 
 ## Shell completion
 

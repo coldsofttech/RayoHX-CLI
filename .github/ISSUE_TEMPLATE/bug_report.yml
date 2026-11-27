@@ -2,6 +2,15 @@ name: Bug report
 description: Report something that is not working as expected
 labels: [bug]
 body:
+  - type: dropdown
+    id: component
+    attributes:
+      label: Which part is affected?
+      options:
+        - Command Line
+        - Not Sure
+    validations:
+      required: true
   - type: textarea
     id: what-happened
     attributes:

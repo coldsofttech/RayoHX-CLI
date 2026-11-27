@@ -4,8 +4,13 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
+## [0.1.1] - 2026-11-27
+
 ### Changed
 
+- Requires `rayohx` 0.1.1 or newer.
+- The command starts faster, because each command is loaded only when it is used.
+- Windows wheels are 64-bit only.
 - Releases ship as compiled wheels (a single `.pyd` on Windows, `.so` elsewhere) with type stubs and no source files, one per platform and Python version.
 - CLI tests now use the test fixtures and helpers shared across the project.
 
