@@ -1,56 +1,77 @@
 [build-system]
-requires = ["hatchling"]
-build-backend = "hatchling.build"
+requires = ["setuptools>=77", "nuitka>=4.3", "mypy>=1.13"]
+build-backend = "setuptools.build_meta"
 
 [project]
-name = "python-cli-public-repo-template"
+name = "rayohx-cli"
 dynamic = ["version"]
-description = "Python command line tool description."
-keywords = ["cli"]
+description = "RayoHX command line (the rayohx command)."
 readme = "README.md"
 requires-python = ">=3.11"
-license = "MIT"
-license-files = ["LICENSE"]
+license = "Apache-2.0"
 authors = [{ name = "coldsofttech" }]
 classifiers = [
-  "Environment :: Console",
   "Programming Language :: Python :: 3",
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
   "Programming Language :: Python :: 3.13",
   "Programming Language :: Python :: 3.14",
   "Programming Language :: Python :: 3.15",
-  "Topic :: Utilities",
   "Typing :: Typed",
 ]
 dependencies = [
+  "rayohx>=0.1.1",
   "rich>=13.9",
-  "typer>=0.15",
+  "typer>=0.29.1",
 ]
 
 [project.scripts]
-example-cli = "example_cli.cli:run"
+rayohx = "rayohx_cli.cli:run"
 
 [project.urls]
-Homepage = "https://github.com/coldsofttech/python-cli-public-repo-template"
-Issues = "https://github.com/coldsofttech/python-cli-public-repo-template/issues"
-Changelog = "https://github.com/coldsofttech/python-cli-public-repo-template/blob/main/CHANGELOG.md"
+Homepage = "https://github.com/coldsofttech/RayoHX-CLI"
+Issues = "https://github.com/coldsofttech/RayoHX-CLI/issues"
+Changelog = "https://github.com/coldsofttech/RayoHX-CLI/blob/main/CHANGELOG.md"
+
+[tool.setuptools.dynamic]
+version = { attr = "rayohx_cli.__version__" }
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+"*" = ["py.typed"]
+
+# Compiled (.pyd/.so) wheels for a release. PYD_BUILD=1 makes setup.py compile the package with Nuitka.
+[tool.cibuildwheel]
+build = "cp311-* cp312-* cp313-* cp314-* cp315-*"
+environment = { PYD_BUILD = "1" }
+test-requires = "pytest rayohx-pytest@git+https://github.com/coldsofttech/RayoHX@pytest-v0.1.0#subdirectory=packages/pytest"
+test-command = "pytest -o addopts= {project}/tests/unit"
+
+# 64-bit only: cryptography publishes no 32-bit Windows wheel, so a 32-bit build could not install it.
+[tool.cibuildwheel.windows]
+archs = ["AMD64"]
+
+# Shared test plugin from the RayoHX repository; not published to PyPI. Pin a tag once one exists.
+[tool.uv.sources]
+rayohx-pytest = { git = "https://github.com/coldsofttech/RayoHX", subdirectory = "packages/pytest", tag = "pytest-v0.1.0" }
 
 [dependency-groups]
 dev = [
   "mypy>=1.13",
+  "pip-licenses>=5.0",
   "pre-commit>=4.0",
   "pytest>=8.3",
   "pytest-cov>=6.0",
   "pytest-xdist>=3.6",
-  "ruff>=0.8",
+  "rayohx-pytest",
+  "ruff>=0.17.4",
 ]
-
-[tool.hatch.version]
-path = "src/example_package/__init__.py"
-
-[tool.hatch.build.targets.wheel]
-packages = ["src/example_package", "src/example_cli"]
+installer = [
+  "hatchling>=1.33.0",
+  "pyinstaller>=6.22.3",
+]
 
 [tool.ruff]
 line-length = 100
@@ -61,16 +82,18 @@ target-version = "py311"
 select = ["B", "C4", "E", "F", "I", "PT", "RUF", "S", "SIM", "T20", "UP", "W"]
 
 [tool.ruff.lint.per-file-ignores]
-"tests/**" = ["S101", "S603"]  # assert and subprocess are fine in tests
-"scripts/**" = ["S603", "S607", "T201"]  # scripts call the trusted gh CLI and print progress
+"tests/**" = ["S101", "S105", "S106", "S603"]  # assert, subprocess and fake passwords are fine in tests
+"scripts/**" = ["S603", "T201"]  # scripts run trusted commands and print progress
 
 [tool.mypy]
 strict = true
+explicit_package_bases = true
+mypy_path = "src"
 files = ["src", "tests"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-addopts = "-m 'not integration' --strict-markers --cov=example_package --cov=example_cli --cov-report=term-missing --cov-fail-under=80"
+addopts = "-m 'not integration' --strict-markers --cov=rayohx_cli --cov-report=term-missing --cov-fail-under=80"
 markers = ["integration: slower end-to-end tests, run in CI but not by default or in pre-commit"]
 
 [tool.coverage.run]

@@ -2,6 +2,11 @@
 
 <!-- Briefly describe the change and why it is needed. -->
 
+## Which part is affected?
+
+- [ ] Command line (`src/rayohx_cli`)
+- [ ] Repository, workflows or docs (everything outside `src/`)
+
 ## Related issues
 
 <!-- e.g. Closes #123 -->
@@ -9,6 +14,7 @@
 ## Checklist
 
 - [ ] The change is focused on one thing
-- [ ] `CHANGELOG.md` has a short `[Unreleased]` entry
+- [ ] The `[Unreleased]` section of `CHANGELOG.md` has a short entry
 - [ ] README or docs are updated if behavior changed
 - [ ] No secrets or personal data are included
+- [ ] Workflow changes: `actionlint` passes

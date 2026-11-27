@@ -1,56 +1,66 @@
 # Development
 
-## Layout
+How to work on this repository, the `rayohx` command line. For how it is built, see [architecture](architecture.md); for using the command, see the [command line guide](guides/cli.md). The pull request process is in the [contributing guide](../CONTRIBUTING.md), tests are described in [testing](testing.md), and packaging and releases in [packaging and releasing](packaging.md).
 
-```text
-src/example_package/   library: all the logic, never prints or exits (typed)
-src/example_cli/       Typer + Rich command line: parses input, calls the library, shows output
-tests/                 pytest tests
-pyproject.toml         metadata, dependencies and tool configuration
-uv.lock                locked dependencies (commit this file)
-```
-
-The example names are `example_package` (library), `example_cli` (command line package) and `example-cli` (the command). After creating a repo from this template:
-
-1. Rename `src/example_package/` and `src/example_cli/` to your import names, and update the imports in `src/` and `tests/`.
-2. In `pyproject.toml`, update `[tool.hatch.version]`, `[tool.hatch.build.targets.wheel]`, the `--cov=` options, and the command in `[project.scripts]`.
-3. Update the command name, the `EXAMPLE_CLI_` environment variable prefix and the help text in `src/example_cli/cli.py`, then in `docs/cli.md` and `README.md`, and regenerate `docs/cli-reference.md` (see [CLI reference](cli.md)).
-4. Set the description in `pyproject.toml`, then run `uv lock`.
-
-Commands, options and exit codes are documented in [CLI reference](cli.md).
-
-## Tooling
-
-| Purpose | Tool |
-| --- | --- |
-| Environment, dependencies, build | [uv](https://docs.astral.sh/uv/) with Hatchling |
-| Lint and format | Ruff |
-| Type checking | mypy (strict) |
-| Tests and coverage | pytest with pytest-cov (80% minimum) |
+## Set up and run
 
 ```bash
-uv sync                    # create .venv and install dev dependencies
-uv run pytest              # unit tests with coverage (skips integration tests)
-uv run pytest -m integration --no-cov   # integration tests only
-uv run ruff check .        # lint
-uv run ruff format .       # format
-uv run mypy                # type check
-uv build                   # build sdist and wheel
+uv sync --locked                                  # the dependencies and the dev tools
+uv run rayohx --help                              # the command, from your checkout
+uv run rayohx info https://example.com/master.m3u8
+uv run python -m rayohx_cli download --help       # the same thing, as a module
 ```
 
-## Integration tests
+The module form works here because development runs the plain Python sources. The compiled wheel a release ships has no `python -m rayohx_cli`; use the `rayohx` command there.
 
-Tests under `tests/integration/` are marked `integration` automatically by that folder's `conftest.py`. They are excluded from the default `pytest` run, and therefore from the pre-commit hook, and run as their own job in CI. Put slower or end-to-end tests there.
+## Checks
 
-## Continuous integration
+Run only what your change touches:
 
-The `ci` workflow runs four jobs: `lint` (pre-commit, including Ruff and mypy), `test` (unit tests), `integration` (tests marked `integration`) and `build` (build and `twine check`). The `test` and `integration` jobs run on Python 3.11 to 3.15 on Ubuntu, and on 3.11 on Windows and macOS. A final `ci` job gates on all four and is the single required check in the branch ruleset.
+```bash
+uv run ruff check .
+uv run ruff format --check .
+uv run mypy
+uv run pytest tests/unit --no-cov
+```
 
-## Releasing to PyPI
+How the tests are organized, the integration and frozen tests, coverage, the shared `rayohx-pytest` plugin and the smoke test of the compiled build are in [testing](testing.md). CI (`ci.yml`) runs the same checks as separate `lint`, `test`, `int-tests` and `build` jobs, with `ci (required check)` as the single check the branch ruleset needs. The `lint` job also runs pre-commit and fails on GPL-licensed dependencies (`uv run pip-licenses --from=mixed --partial-match --fail-on="GPL" --format=plain` runs the same check locally). Two more workflows run outside that check: `security.yml` (Semgrep, results in the Security tab) and `audit.yml` (`pip-audit` on the locked dependencies, weekly and when `uv.lock` changes).
 
-Publishing uses [trusted publishing](https://docs.pypi.org/trusted-publishers/), so no API token is stored.
+## Working with the library
 
-1. On PyPI, add a trusted publisher for this repository: workflow `release.yml`, environment `pypi`.
-2. Create an environment named `pypi`. The settings script does this and restricts it to `v*` tags.
-3. Bump `__version__` in `src/<package>/__init__.py` and update `CHANGELOG.md`.
-4. Publish a GitHub release tagged `v<version>`. The workflow fails if the tag and version differ.
+`rayohx-cli` depends on the `rayohx` library on PyPI, and `uv sync` installs the published version. To try the command against a local checkout of the library, install it into the environment on top of that:
+
+```bash
+uv pip install -e ../RayoHX/packages/core
+```
+
+Run `uv sync --locked` again to go back to the published library.
+
+## Adding an option
+
+1. Define it once in the right file in `params/` (selection, network, engine, output or display) and put it in that file's help panel.
+2. Add it to the signature of each command that takes it, and pass it to `make_config(...)` in that command.
+3. Handle it in `values.build_config`, and raise `ConfigurationError` for a bad value so it becomes a usage error.
+4. The environment variable `RAYOHX_<NAME>` and the settings-file key work automatically, because both use the option's name.
+5. Add unit tests for the value handling and for the command.
+6. Update the guide in `docs/guides/cli/` and the `[Unreleased]` section of `CHANGELOG.md`.
+
+## Adding a command
+
+1. Add a module in `cli/` with a function decorated by `@app.command()`, and import it in `cli/__init__.py` so it registers.
+2. Reuse the options in `params/`, build settings with `make_config`, and call the library for the work. Keep the command to parsing and showing.
+3. Print through `output` only: the result with `output.data` or `output.print_json`, everything else with `output.message` and `output.error_from`.
+4. End with one of the exit codes in `cli/common.py`.
+5. Document it in `docs/guides/cli/` and the changelog.
+
+## Rules to keep
+
+- No `print`: the linter rejects it, and `output` keeps data on stdout and messages on stderr.
+- Keep Typer's Rich help: `rich_markup_mode="rich"` on every Typer app, and escape literal square brackets in help text with a backslash.
+- Never show local variables in an error, and never put headers, cookies, keys or tokens in output or logs.
+- The library does the work and never imports the command line. If you need logic in the command, it probably belongs in `rayohx`.
+- Explain any `# noqa` or `# nosemgrep` with a reason in the comment.
+
+## Installers
+
+The installers (the Windows setup and the Linux packages) are built from the [RayoHX-Installer](https://github.com/coldsofttech/RayoHX-Installer) repository, from the published command line. See [packaging](packaging.md).

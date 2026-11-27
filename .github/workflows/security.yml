@@ -1,0 +1,39 @@
+name: Security
+
+# Static analysis (Semgrep). Findings are uploaded as SARIF, so they show up in the
+# repository's Security tab (Code scanning) next to CodeQL, and the job fails when it finds a problem.
+# It is not part of the required `ci` check, so a new rule does not block unrelated pull requests.
+# The weekly run catches vulnerabilities published after a merge.
+# Scans the command line, its scripts and the workflows.
+on:
+  schedule:
+    - cron: "0 5 * * 1"
+  workflow_dispatch:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: security-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  semgrep:
+    name: semgrep
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      security-events: write
+      actions: read
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v7
+      - name: Semgrep
+        uses: ./.github/actions/semgrep
+        with:
+          configs: p/python p/owasp-top-ten p/github-actions
+          category: semgrep
