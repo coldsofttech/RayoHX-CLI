@@ -55,7 +55,7 @@ The tag must equal the package version, for example `v0.2.0` for `__version__ = 
 
 Every wheel is built, and tested by cibuildwheel, before the approval, so the reviewer approves a release that already works. Release notes are written on the GitHub release by hand (or with its "Generate release notes" button); `.github/release.yml` groups the generated ones into features, bug fixes and other changes.
 
-4. Check the new version on PyPI: `uvx --from rayohx-cli==<version> rayohx --version`.
+After the release, check the new version on PyPI: `uvx --from rayohx-cli==<version> rayohx --version`.
 
 ### PyPI trusted publishing
 
