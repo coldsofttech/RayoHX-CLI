@@ -11,3 +11,21 @@ excludes = [
 ]
 collect = ["rayohx_cli", "rich", "typer", "httpx", "httpcore", "h11", "anyio", "socksio"]
 compile = ["rayohx_cli", "rich", "typer", "httpx", "httpcore", "h11", "anyio", "socksio"]
+
+[setup]
+# Never change the guid after the first release: Windows uses it to find the installed command.
+guid = "{4B1F6C0E-7D2A-4E5B-9C38-2A6D1E8F5B73}"
+title = "RayoHX CLI"
+install-dir = "ColdSoft Technologies/RayoHX CLI"
+start-menu-dir = "ColdSoft Technologies/RayoHX CLI"
+nsi = "installer/windows/setup.nsi"
+path-script = "installer/windows/path.ps1"
+nfpm = "installer/linux/nfpm.yaml"
+licence = "LICENSE"
+icon = "brand/light/app.ico"
+icon-dir = "brand/light/png"
+header-image = "brand/dark/nsis/header.bmp"
+welcome-image = "brand/dark/nsis/welcome.bmp"
+homepage = "https://github.com/coldsofttech/RayoHX-CLI"
+issues = "https://github.com/coldsofttech/RayoHX-CLI/issues"
+changelog = "https://github.com/coldsofttech/RayoHX-CLI/blob/main/CHANGELOG.md"

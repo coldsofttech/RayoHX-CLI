@@ -6,7 +6,7 @@ Only the latest release receives security fixes.
 
 ## What is covered
 
-The `rayohx` command line (`rayohx-cli`). How it protects secrets and the machine it runs on is described in [docs/security.md](docs/security.md). Problems in the download engine itself belong to the [RayoHX](https://github.com/coldsofttech/RayoHX) repository, which holds the `rayohx` library.
+The `rayohx` command line (`rayohx-cli`), and the Windows setup and Linux packages published with each release. How it protects secrets and the machine it runs on is described in [docs/security.md](docs/security.md). Problems in the download engine itself belong to the [RayoHX](https://github.com/coldsofttech/RayoHX) repository, which holds the `rayohx` library.
 
 ## Reporting a vulnerability
 

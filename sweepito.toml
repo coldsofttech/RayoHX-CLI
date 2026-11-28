@@ -3,8 +3,9 @@ profiles = ["python"]
 risk = "safe"
 
 [clean]
-# Exclusions always win over cleanup rules. Keep the uv environment between commits.
-exclude = [".venv/"]
+# Exclusions always win over cleanup rules. Keep the uv environment and the PyInstaller work folder
+# (.freeze/) between commits.
+exclude = [".venv/", ".freeze/"]
 
 [hook]
 quiet = true

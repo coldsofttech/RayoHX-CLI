@@ -5,7 +5,8 @@ name: Release
 # architecture and Python version, with no sdist and so no .py sources. Once the `cli` environment is
 # approved (Settings > Environments), it publishes them to PyPI with trusted publishing (no stored
 # tokens) and attaches them to the release, with a portable one-folder command line for Windows
-# (.zip) and Linux, x64 and arm64 (.tar.gz), frozen with PyInstaller.
+# (.zip) and Linux, x64 and arm64 (.tar.gz), frozen with PyInstaller, a Windows setup (NSIS) and Linux
+# .deb and .rpm packages (nfpm) of it.
 #
 # The tag must match __version__ in src/rayohx_cli/__init__.py. rayohx-cli depends on the rayohx
 # package on PyPI, so release core (RayoHX) first.
@@ -63,7 +64,8 @@ jobs:
           path: dist/*.whl
 
   # The portable command line (one folder, frozen with PyInstaller) for Windows and Linux, built from
-  # the compiled wheel of the newest Python.
+  # the compiled wheel of the newest Python, plus its Windows setup and Linux packages, each installed
+  # and removed again as a check.
   freeze:
     name: freeze (${{ matrix.os }})
     needs: build
@@ -85,16 +87,29 @@ jobs:
         with:
           name: dist-${{ matrix.os }}-cp315
           path: dist/
-      - name: Freeze the command line with PyInstaller
+      - name: Install the installer tools
+        uses: ./.github/actions/install-installer-tools
+      - name: Freeze the command line with PyInstaller and build the setup or packages
         shell: bash
-        run: uv run --no-project --with packaging python scripts/build.py --no-build --wheels dist
-      - name: Upload the portable command line
+        run: |
+          if [ "$RUNNER_OS" = "Windows" ]; then installer=--setup; else installer=--packages; fi
+          uv run --no-project --with packaging python scripts/build.py --no-build "$installer" --wheels dist
+      - name: Install and uninstall the setup
+        if: runner.os == 'Windows'
+        uses: ./.github/actions/test-setup
+      - name: Install and remove the Linux packages
+        if: runner.os == 'Linux'
+        uses: ./.github/actions/test-linux-packages
+      - name: Upload the portable command line, the setup and the packages
         uses: actions/upload-artifact@v7
         with:
           name: app-${{ matrix.os }}
           path: |
             dist/*.zip
             dist/*.tar.gz
+            dist/*-setup.exe
+            dist/*.deb
+            dist/*.rpm
           if-no-files-found: error
 
   publish:

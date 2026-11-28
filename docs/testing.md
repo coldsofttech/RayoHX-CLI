@@ -86,7 +86,7 @@ Put a helper in the plugin, not here, when another repository needs it too.
 
 ## The frozen tests
 
-`tests/integration/test_frozen_cli.py` starts the built PyInstaller program and checks it answers. They need a PyInstaller build first, which is made by the installer scripts in the [RayoHX-Installer](https://github.com/coldsofttech/RayoHX-Installer) repository. Without a build they are skipped. Set `RAYOHX_INSTALLER_DIR` to the folder that holds the build; by default it looks in `build/installer` at the repository root, with the program in a `rayohx` folder.
+`tests/integration/test_frozen_cli.py` starts the built PyInstaller program and checks it answers. They need a PyInstaller build first, which `python scripts/build.py` makes in `.freeze/dist/rayohx`. Without a build they are skipped. Set `RAYOHX_INSTALLER_DIR` to the folder that holds the build (`.freeze/dist`); by default it looks in `build/installer` at the repository root, with the program in a `rayohx` folder.
 
 ## The compiled build
 

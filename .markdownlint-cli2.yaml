@@ -7,3 +7,4 @@ config:
 ignores:
   - "**/dist/**"
   - "**/.venv/**"
+  - "**/.freeze/**"

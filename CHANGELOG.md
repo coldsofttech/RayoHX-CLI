@@ -9,6 +9,7 @@ All notable changes to this project are documented here. The format follows [Kee
 ### Added
 
 - Releases include a portable `rayohx` for Windows (`.zip`) and Linux (`.tar.gz`) that needs no Python.
+- Releases include a Windows setup for `rayohx` (per user or all users, with an option to add it to `PATH`) and Linux `.deb` and `.rpm` packages.
 
 ### Changed
 

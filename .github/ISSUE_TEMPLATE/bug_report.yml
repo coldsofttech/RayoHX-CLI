@@ -8,6 +8,7 @@ body:
       label: Which part is affected?
       options:
         - Command Line
+        - Windows setup or Linux packages
         - Not Sure
     validations:
       required: true

@@ -103,11 +103,42 @@ jobs:
       - name: Smoke test the built wheel
         run: uvx --from dist/rayohx_cli-*.whl rayohx --version
 
+  # The portable command line frozen with PyInstaller, then its Windows setup or Linux packages,
+  # installed and removed again.
+  installers:
+    name: installers (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v7
+      - name: Set up uv
+        uses: ./.github/actions/setup-uv
+        with:
+          sync: "false"
+      - name: Install the installer tools
+        uses: ./.github/actions/install-installer-tools
+      - name: Build the compiled wheel, freeze it and build the setup or packages
+        shell: bash
+        run: |
+          if [ "$RUNNER_OS" = "Windows" ]; then installer=--setup; else installer=--packages; fi
+          uv run --no-project --with packaging python scripts/build.py "$installer"
+      - name: Install and uninstall the setup
+        if: runner.os == 'Windows'
+        uses: ./.github/actions/test-setup
+      - name: Install and remove the Linux packages
+        if: runner.os == 'Linux'
+        uses: ./.github/actions/test-linux-packages
+
   # Single required status check for the branch ruleset.
   ci:
     name: ci (required check)
     if: always()
-    needs: [lint, test, int-tests, build]
+    needs: [lint, test, int-tests, build, installers]
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
