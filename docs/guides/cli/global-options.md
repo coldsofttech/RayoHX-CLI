@@ -25,7 +25,7 @@ rayohx --verbose info URL
 ## Version and help
 
 ```bash
-rayohx --version          # rayohx 0.1.1
+rayohx --version          # rayohx 0.1.2
 rayohx --help             # the commands
 rayohx download --help    # one command's options, grouped by purpose
 ```

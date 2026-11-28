@@ -4,6 +4,12 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
+## [0.1.2] - 2026-11-28
+
+### Added
+
+- Release builds are signed: the Windows `rayohx.exe` and setup, and the Linux `.deb` and `.rpm` packages.
+
 ## [0.1.1] - 2026-11-27
 
 ### Added
