@@ -28,7 +28,10 @@ How the `rayohx` command protects secrets and the machine it runs on. To report 
 
 - **PyPI releases are published without stored tokens.** `release.yml` uploads through PyPI trusted publishing, after a reviewer approves the `cli` environment. See [packaging and releasing](packaging.md#releasing-to-pypi).
 - **The wheels hold compiled code only.** The release checks that a wheel has the compiled command line and no `.py` sources.
-- **The installers are separate.** The Windows setup and the Linux packages are built and released from the [RayoHX-Installer](https://github.com/coldsofttech/RayoHX-Installer) repository; their protections (per-user install, narrow uninstall, checksums, signing) are described in its security notes.
+- **The Windows setup installs for one user by default.** Setup runs without administrator rights unless the user chooses "all users" (then UAC asks). The uninstaller removes only the files setup installed, so a folder chosen by hand keeps anything else in it, and it never touches settings or data in the user's profile.
+- **PATH is edited by a script, not by the installer.** `installer/windows/path.ps1` adds or removes the install folder in the user (or machine) `PATH` in the registry, keeping the value type and `%VARIABLES%`, so a long `PATH` is never cut. Setup can skip it with the `/NOPATH` option.
+- **The Linux packages are system-wide and own only their files.** They install under `/usr/lib/rayohx` with a link in `/usr/bin`, and never write to a user's home folder.
+- **Releases carry checksums.** The setup, packages, archives and wheels are attached with `SHA256SUMS.txt`. Each setup and package is installed and removed in CI before it is attached.
 
 ## Not included
 

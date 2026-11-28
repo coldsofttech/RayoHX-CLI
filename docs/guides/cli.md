@@ -56,7 +56,7 @@ uvx --from rayohx-cli rayohx --help
 ```
 
 Ready-made installers (Windows setup, Linux `.deb` and `.rpm` packages) are on the
-[RayoHX-Installer releases page](https://github.com/coldsofttech/RayoHX-Installer/releases). The package name is
+[releases page](https://github.com/coldsofttech/RayoHX-CLI/releases). The package name is
 `rayohx-cli`; the command is `rayohx`.
 
 ```bash

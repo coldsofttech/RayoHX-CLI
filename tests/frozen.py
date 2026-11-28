@@ -1,7 +1,7 @@
 """Finding the executables PyInstaller built, for the smoke tests in the integration folders.
 
-The tests need a PyInstaller build first. The scripts in the RayoHX-Installer repository
-make it; the executables are in ``<build dir>/rayohx``. Set
+The tests need a PyInstaller build first. ``scripts/build.py`` makes it in
+``.freeze/dist``; the executables are in ``<build dir>/rayohx``. Set
 ``RAYOHX_INSTALLER_DIR`` to test a build somewhere other than ``build/installer``. Without a
 build the tests are skipped.
 """

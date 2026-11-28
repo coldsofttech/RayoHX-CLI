@@ -1,0 +1,30 @@
+name: Test the Linux packages
+description: Install the built deb on the runner and the rpm in a Fedora container, run the command line, then remove them and check nothing is left behind. Run on Linux, after scripts/build.py --packages.
+
+runs:
+  using: composite
+  steps:
+    - name: Install, run and remove the deb
+      shell: bash
+      run: |
+        sudo apt-get install --yes ./dist/*.deb
+        rayohx --version
+        rayohx download --help > /dev/null
+        test -f /usr/share/icons/hicolor/256x256/apps/rayohx.png
+        sudo apt-get remove --yes rayohx
+        hash -r  # the shell remembers where it ran the command from; forget that before checking
+        if command -v rayohx; then echo "rayohx is still installed"; exit 1; fi
+        if [ -e /usr/lib/rayohx ]; then echo "files were left behind"; exit 1; fi
+        if [ -e /usr/share/icons/hicolor/256x256/apps/rayohx.png ]; then echo "the icon was left behind"; exit 1; fi
+    - name: Install, run and remove the rpm (Fedora)
+      shell: bash
+      run: |
+        docker run --rm --volume "$PWD/dist:/pkgs:ro" fedora:latest bash -euxc '
+          dnf install --assumeyes /pkgs/*.rpm
+          rayohx --version
+          rayohx download --help > /dev/null
+          dnf remove --assumeyes rayohx
+          hash -r
+          if command -v rayohx; then echo "rayohx is still installed"; exit 1; fi
+          if [ -e /usr/lib/rayohx ]; then echo "files were left behind"; exit 1; fi
+        '

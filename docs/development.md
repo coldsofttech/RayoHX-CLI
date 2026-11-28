@@ -63,4 +63,4 @@ Run `uv sync --locked` again to go back to the published library.
 
 ## Installers
 
-The installers (the Windows setup and the Linux packages) are built from the [RayoHX-Installer](https://github.com/coldsofttech/RayoHX-Installer) repository, from the published command line. See [packaging](packaging.md).
+The Windows setup (NSIS) and the Linux packages (`.deb`, `.rpm`) are built here from the frozen command line, with `python scripts/build.py --setup` on Windows and `--packages` on Linux. NSIS and nfpm versions are pinned in `installer/tools.toml`. See [packaging](packaging.md#the-installers).

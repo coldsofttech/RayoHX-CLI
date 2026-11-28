@@ -5,6 +5,7 @@
 ## Which part is affected?
 
 - [ ] Command line (`src/rayohx_cli`)
+- [ ] Windows setup or Linux packages (`installer/`, `scripts/build.py`)
 - [ ] Repository, workflows or docs (everything outside `src/`)
 
 ## Related issues

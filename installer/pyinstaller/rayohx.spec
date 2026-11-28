@@ -257,6 +257,7 @@ exe = EXE(
     exclude_binaries=True,
     name=NAME,
     console=True,
+    icon=str(ROOT / "brand" / "light" / "app.ico"),  # Windows only; ignored on Linux
     version=version_info(metadata.version(DISTRIBUTION)),
     upx=False,
     # Everything but the executable goes in lib/ (COLLECT follows the EXE).

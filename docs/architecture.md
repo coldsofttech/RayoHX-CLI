@@ -72,4 +72,4 @@ The file is TOML whose keys are option names. It is `--config`, else `rayohx.tom
 
 - The console script is `rayohx = rayohx_cli.cli:run`.
 - The package is released to PyPI as compiled wheels (`setup.py` compiles it with Nuitka when `PYD_BUILD=1`); see [packaging and releasing](packaging.md).
-- It depends on the `rayohx` library on PyPI for all of the work. The library lives in the [RayoHX](https://github.com/coldsofttech/RayoHX) repository. The installers, which bundle the published command line, live in [RayoHX-Installer](https://github.com/coldsofttech/RayoHX-Installer).
+- It depends on the `rayohx` library on PyPI for all of the work. The library lives in the [RayoHX](https://github.com/coldsofttech/RayoHX) repository. The Windows setup and the Linux packages of the command line are built in this repository (see [packaging](packaging.md#the-installers)).

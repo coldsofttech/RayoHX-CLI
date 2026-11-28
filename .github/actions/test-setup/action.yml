@@ -1,0 +1,38 @@
+name: Test the Windows setup
+description: Install the built setup.exe for the current user, run the installed command, check it is on PATH, then uninstall it and check nothing is left behind. Then install again with /NOPATH and check PATH is untouched. Run on Windows, after scripts/build.py --setup.
+
+runs:
+  using: composite
+  steps:
+    - name: Install, run and uninstall the setup (per user)
+      shell: pwsh
+      run: |
+        $setup = Get-ChildItem "dist/rayohx-cli-*-setup.exe" | Select-Object -First 1
+        $dir = Join-Path $env:RUNNER_TEMP "installed-rayohx"
+        function Run-Setup($file, $arguments) {
+          $process = Start-Process -Wait -PassThru -FilePath $file -ArgumentList $arguments
+          if ($process.ExitCode -ne 0) { throw "$file exited with code $($process.ExitCode)" }
+        }
+        function On-Path { [Environment]::GetEnvironmentVariable('Path', 'User') -split ';' | Where-Object { $_.TrimEnd('\') -eq $dir } }
+        function Uninstall {
+          if (-not (Test-Path "$dir/uninstall.exe")) { throw "no uninstaller" }
+          # _?= makes the uninstaller run in place, so Start-Process can wait for it.
+          Run-Setup "$dir/uninstall.exe" @('/S', "_?=$dir")
+          if (Test-Path "$dir/rayohx.exe") { throw "uninstall left the command behind" }
+          if (Test-Path "$dir/lib") { throw "uninstall left lib behind" }
+          if (On-Path) { throw "uninstall left the folder on PATH" }
+          Remove-Item -Recurse -Force $dir -ErrorAction SilentlyContinue
+        }
+
+        # Default: added to PATH
+        Run-Setup $setup.FullName @('/S', '/currentuser', "/D=$dir")
+        if (-not (Test-Path "$dir/rayohx.exe")) { throw "the command was not installed" }
+        Run-Setup "$dir/rayohx.exe" @('--version')
+        if (-not (On-Path)) { throw "the folder was not added to PATH" }
+        Uninstall
+
+        # /NOPATH: PATH stays as it was
+        Run-Setup $setup.FullName @('/S', '/currentuser', '/NOPATH', "/D=$dir")
+        if (-not (Test-Path "$dir/rayohx.exe")) { throw "the command was not installed" }
+        if (On-Path) { throw "/NOPATH still added the folder to PATH" }
+        Uninstall

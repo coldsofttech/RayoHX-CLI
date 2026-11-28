@@ -83,12 +83,23 @@ Check it works:
 rayohx --version
 ```
 
-No Python? Download the portable build for Windows (`.zip`) or Linux (`.tar.gz`) from the
-[releases page](https://github.com/coldsofttech/RayoHX-CLI/releases), unpack it and run `rayohx`
-from the unpacked folder (add the folder to your `PATH` to run it from anywhere).
+No Python? Get a ready-made build from the
+[releases page](https://github.com/coldsofttech/RayoHX-CLI/releases):
 
-Prefer a ready-made installer (Windows setup, Linux `.deb` and `.rpm`)? The newest ones are on the
-[RayoHX-Installer releases page](https://github.com/coldsofttech/RayoHX-Installer/releases).
+- **Windows setup** (`rayohx-cli-<version>-windows-x64-setup.exe`): run it and follow the steps. It
+  installs for you only by default (no administrator needed) or for all users if you choose, can add
+  `rayohx` to your `PATH` so it works in any terminal, and adds a Start Menu entry. Remove it from
+  Settings > Apps. For scripts, run `setup.exe /S`, optionally with `/allusers`, `/NOPATH` or
+  `/D=C:\folder`.
+- **Linux packages** (`.deb` and `.rpm`): `sudo apt install ./rayohx_<version>_amd64.deb` or
+  `sudo dnf install ./rayohx-<version>-1.x86_64.rpm`. The `rayohx` command is then available to
+  everyone, and removing the package removes it.
+- **Portable folder** for Windows (`.zip`) or Linux (`.tar.gz`): unpack it and run `rayohx` from the
+  folder (add the folder to your `PATH` to run it from anywhere).
+
+Linux builds are available for x64 and arm64; Windows builds are x64. Each release lists SHA-256
+checksums (`SHA256SUMS.txt`) for every file, so you can check a download. On macOS, install from PyPI
+with `uv tool install rayohx-cli` or `pipx install rayohx-cli`.
 
 ## Quick start
 
@@ -141,7 +152,7 @@ Run `rayohx --help`, or `rayohx download --help`, to see every option.
 |---|---|
 | Python library, to use RayoHX inside your own programs | [`rayohx`](https://pypi.org/project/rayohx/) |
 | Docker image, the same command without installing Python | `ghcr.io/coldsofttech/rayohx` |
-| Desktop window for Windows | The full setup on the [RayoHX-Installer releases page](https://github.com/coldsofttech/RayoHX-Installer/releases) |
+| Desktop window for Windows | The setup on the [RayoHX-Desktop releases page](https://github.com/coldsofttech/RayoHX-Desktop/releases) |
 
 ## Learn more
 
