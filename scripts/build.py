@@ -106,6 +106,32 @@ def find_makensis() -> str:
     raise SystemExit("makensis not found. Install NSIS (version in installer/tools.toml).")
 
 
+def find_signtool() -> str:
+    found = shutil.which("signtool")
+    if found:
+        return found
+    kits = Path(os.environ.get("PROGRAMFILES(X86)", "")) / "Windows Kits" / "10" / "bin"
+    candidates = sorted(kits.glob("*/x64/signtool.exe"), reverse=True)
+    if not candidates:
+        raise SystemExit("signtool not found. Install the Windows SDK.")
+    return str(candidates[0])
+
+
+def sign_windows(*files: Path) -> None:
+    """Sign the files with the Authenticode certificate when ``SIGN_PFX`` is set, else skip."""
+    pfx = os.environ.get("SIGN_PFX")
+    if not pfx:
+        print("SIGN_PFX not set: leaving the Windows files unsigned.")
+        return
+    password = os.environ["SIGN_PASSWORD"]
+    for file in files:
+        run(find_signtool(), "sign", "/fd", "SHA256", "/f", pfx, "/p", password,
+            "/tr", os.environ.get("SIGN_TIMESTAMP_URL", "http://timestamp.digicert.com"),
+            "/td", "SHA256", file)  # fmt: skip
+        if os.environ.get("SIGN_TRUSTED"):  # a self-signed certificate fails this check
+            run(find_signtool(), "verify", "/pa", "/v", file)
+
+
 def numeric_version(text: str) -> str:
     numbers = re.findall(r"\d+", text)[:4]
     return ".".join(numbers + ["0"] * (4 - len(numbers)))
@@ -180,7 +206,10 @@ def build_packages(folder: Path, out: Path, arch: str) -> list[Path]:
         "PKG_SOURCE_DIR": str(folder),
         "PKG_LICENSE_FILE": str(ROOT / config["licence"]),
         "PKG_ICON_DIR": str(ROOT / config["icon-dir"]),
+        "PKG_SIGN_KEY": os.environ.get("SIGN_PGP_KEY", ""),
     }
+    if env["PKG_SIGN_KEY"]:
+        env["NFPM_PASSPHRASE"] = os.environ["SIGN_PASSWORD"]
     before = set(out.iterdir())
     for packager in ("deb", "rpm"):
         run(nfpm, "package", "--config", ROOT / config["nfpm"], "--packager", packager,
@@ -229,6 +258,8 @@ def main() -> None:
         "--workpath", WORK / "work")  # fmt: skip
     folder = out / NAME
     run(folder / (f"{NAME}.exe" if WINDOWS else NAME), "--version")  # starts and imports the app
+    if WINDOWS:
+        sign_windows(folder / f"{NAME}.exe")  # before the zip and the setup take a copy
 
     system = "windows" if WINDOWS else "linux"
     arch = ARCHITECTURES.get(platform.machine().lower(), platform.machine().lower())
@@ -237,7 +268,9 @@ def main() -> None:
     archive(folder, target)
     print(f"wrote {target}")
     if args.setup:
-        print(f"wrote {build_setup(folder, args.wheels)}")
+        setup = build_setup(folder, args.wheels)
+        sign_windows(setup)
+        print(f"wrote {setup}")
     if args.packages:
         for package in build_packages(folder, args.wheels, arch):
             print(f"wrote {package}")

@@ -39,6 +39,14 @@ vendor: ${PKG_MAINTAINER}
 # The release bundles the Python runtime and every library except the C library.
 depends:
   - libc6
+# Signing: scripts/build.py sets PKG_SIGN_KEY (an armored PGP private key file) and NFPM_PASSPHRASE
+# on release builds. When PKG_SIGN_KEY is empty, nfpm leaves the packages unsigned.
+deb:
+  signature:
+    key_file: ${PKG_SIGN_KEY}
+rpm:
+  signature:
+    key_file: ${PKG_SIGN_KEY}
 overrides:
   rpm:
     depends:

@@ -90,6 +90,27 @@ No tokens are stored, and only the publish job gets the `id-token` permission. O
 - **Publishing was refused:** the trusted publisher on PyPI does not match the workflow or environment above.
 - **PyPI never accepts a version twice**, even after deleting it. If a version went out wrong, fix it and release the next one.
 
+## Signing
+
+The release workflow signs the Windows `rayohx.exe` and setup (Authenticode, `signtool`) and the Linux
+`.deb` and `.rpm` packages (PGP, nfpm). Without the secrets below the build still runs, unsigned.
+
+| Secret | Value |
+| --- | --- |
+| `SIGNING_PASSWORD` | The password shared by the PFX and the PGP key. |
+| `WINDOWS_SIGNING_PFX_BASE64` | `ColdSoftTechnologies.pfx`, base64 encoded. |
+| `PGP_SIGNING_KEY_BASE64` | The armored PGP private key, base64 encoded. |
+
+Add them under Settings > Secrets and variables > Actions. Encode a file with PowerShell:
+`[Convert]::ToBase64String([IO.File]::ReadAllBytes("file"))`.
+
+- The certificate is self-signed, so Windows still warns until it is trusted on a machine. The
+  signature is time-stamped (`SIGN_TIMESTAMP_URL`, DigiCert by default) so it outlives the certificate.
+- Publish the PGP public key (`.asc`) so users can verify the `.deb` and `.rpm`.
+- Never commit the `.pfx` or the private key.
+- To sign a local build, set `SIGN_PFX` and `SIGN_PASSWORD` (Windows) or `SIGN_PGP_KEY` and
+  `SIGN_PASSWORD` (Linux) before running `scripts/build.py`.
+
 ## Build time
 
 Starting targets, to be revisited after the first real runs and recorded here:
