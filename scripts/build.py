@@ -58,6 +58,8 @@ def version() -> str:
 def wheel(folder: Path) -> Path:
     """The one compiled rayohx-cli wheel for this Python in ``folder``."""
     found = sorted(folder.glob("rayohx_cli-*.whl"))
+    if len(found) > 1:  # Linux builds a manylinux and a musllinux wheel; freeze with the glibc one
+        found = [path for path in found if "musllinux" not in path.name]
     if len(found) != 1:
         raise SystemExit(f"Expected one rayohx_cli wheel in {folder}, found {len(found)}.")
     return found[0]
