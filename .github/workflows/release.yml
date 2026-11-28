@@ -4,7 +4,8 @@ name: Release
 # as compiled wheels (one Nuitka .pyd on Windows, .so elsewhere) with cibuildwheel, one per OS,
 # architecture and Python version, with no sdist and so no .py sources. Once the `cli` environment is
 # approved (Settings > Environments), it publishes them to PyPI with trusted publishing (no stored
-# tokens) and attaches them to the release.
+# tokens) and attaches them to the release, with a portable one-folder command line for Windows
+# (.zip) and Linux, x64 and arm64 (.tar.gz), frozen with PyInstaller.
 #
 # The tag must match __version__ in src/rayohx_cli/__init__.py. rayohx-cli depends on the rayohx
 # package on PyPI, so release core (RayoHX) first.
@@ -61,9 +62,44 @@ jobs:
           name: dist-${{ matrix.os }}-cp${{ matrix.python }}
           path: dist/*.whl
 
+  # The portable command line (one folder, frozen with PyInstaller) for Windows and Linux, built from
+  # the compiled wheel of the newest Python.
+  freeze:
+    name: freeze (${{ matrix.os }})
+    needs: build
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, ubuntu-24.04-arm, windows-latest]
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v7
+      - name: Set up uv
+        uses: ./.github/actions/setup-uv
+        with:
+          sync: "false"
+      - name: Download the wheel
+        uses: actions/download-artifact@v8
+        with:
+          name: dist-${{ matrix.os }}-cp315
+          path: dist/
+      - name: Freeze the command line with PyInstaller
+        shell: bash
+        run: uv run --no-project --with packaging python scripts/build.py --no-build --wheels dist
+      - name: Upload the portable command line
+        uses: actions/upload-artifact@v7
+        with:
+          name: app-${{ matrix.os }}
+          path: |
+            dist/*.zip
+            dist/*.tar.gz
+          if-no-files-found: error
+
   publish:
     name: publish (PyPI)
-    needs: build
+    needs: [build, freeze]
     runs-on: ubuntu-latest
     timeout-minutes: 10
     environment: cli

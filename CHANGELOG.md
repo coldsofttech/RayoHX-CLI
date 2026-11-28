@@ -6,6 +6,10 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [0.1.1] - 2026-11-27
 
+### Added
+
+- Releases include a portable `rayohx` for Windows (`.zip`) and Linux (`.tar.gz`) that needs no Python.
+
 ### Changed
 
 - Requires `rayohx` 0.1.1 or newer.

@@ -52,6 +52,8 @@ coverage.xml
 *.so
 wheelhouse/
 *.spec
+!installer/pyinstaller/*.spec
+.freeze/
 
 .temp/
 
