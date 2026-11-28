@@ -83,6 +83,10 @@ Check it works:
 rayohx --version
 ```
 
+No Python? Download the portable build for Windows (`.zip`) or Linux (`.tar.gz`) from the
+[releases page](https://github.com/coldsofttech/RayoHX-CLI/releases), unpack it and run `rayohx`
+from the unpacked folder (add the folder to your `PATH` to run it from anywhere).
+
 Prefer a ready-made installer (Windows setup, Linux `.deb` and `.rpm`)? The newest ones are on the
 [RayoHX-Installer releases page](https://github.com/coldsofttech/RayoHX-Installer/releases).
 

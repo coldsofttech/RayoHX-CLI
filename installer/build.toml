@@ -1,0 +1,13 @@
+[freeze]
+name = "rayohx"
+title = "RayoHX command line"
+publisher = "ColdSoft Technologies"
+compiled = ["rayohx", "rayohx-cli"]
+metadata = ["rayohx", "rayohx-cli", "typer", "rich", "httpx", "cryptography"]
+hidden-imports = ["sqlite3"]
+excludes = [
+    "tkinter", "pytest", "setuptools", "pkg_resources", "mypy", "hypothesis", "requests",
+    "charset_normalizer", "werkzeug", "markupsafe",
+]
+collect = ["rayohx_cli", "rich", "typer", "httpx", "httpcore", "h11", "anyio", "socksio"]
+compile = ["rayohx_cli", "rich", "typer", "httpx", "httpcore", "h11", "anyio", "socksio"]
