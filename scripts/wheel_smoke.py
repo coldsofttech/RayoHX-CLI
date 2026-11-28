@@ -14,6 +14,9 @@ import importlib.metadata
 import subprocess
 import sys
 
+# The compiled wheel has no __main__ to run with -m, so start the command the way its script does.
+START = "import sys; from rayohx_cli.cli import run; sys.argv = ['rayohx', '--version']; run()"
+
 
 def main() -> int:
     import rayohx_cli
@@ -32,7 +35,7 @@ def main() -> int:
         return 1
 
     result = subprocess.run(
-        [sys.executable, "-m", "rayohx_cli", "--version"],
+        [sys.executable, "-c", START],
         capture_output=True,
         text=True,
         check=False,
